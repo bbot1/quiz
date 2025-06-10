@@ -2,55 +2,45 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>퀴즈 결과</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="result-container">
+  <div class="container">
     <h2>퀴즈 결과</h2>
-    <div id="resultScore"></div>
-    <div id="resultTime"></div>
+    <p id="resultScore"></p>
+    <h3>틀린 문제 목록</h3>
     <div id="wrongList"></div>
-    <button onclick="location.href='start.html'">처음으로</button>
-    <h3>📜 이전 기록</h3>
-    <div id="recordList"></div>
+    <button id="restartBtn">처음으로 돌아가기</button>
   </div>
+
   <script>
-    const user = localStorage.getItem('quizUser') || '익명';
-    const startTime = new Date(localStorage.getItem('quizStartTime'));
-    const endTime = new Date();
-    const score = parseInt(localStorage.getItem('quizScore') || '0');
-    const total = parseInt(localStorage.getItem('quizTotal') || '0');
-    const wrong = JSON.parse(localStorage.getItem('quizWrong') || '[]');
+    const score = localStorage.getItem('quizScore');
+    const total = localStorage.getItem('quizTotal');
+    const wrong = JSON.parse(localStorage.getItem('quizWrong')) || [];
 
-    document.getElementById('resultScore').textContent = `✅ 점수: ${score} / ${total}`;
-    document.getElementById('resultTime').textContent = `⏱️ 시간: ${Math.floor((endTime - startTime) / 1000)}초`;
-
+    const resultScore = document.getElementById('resultScore');
     const wrongList = document.getElementById('wrongList');
-    if (wrong.length === 0) {
-      wrongList.innerHTML = "<p>👍 모두 맞았습니다!</p>";
+    const restartBtn = document.getElementById('restartBtn');
+
+    resultScore.textContent = `점수: ${score} / ${total}`;
+
+    if(wrong.length === 0) {
+      wrongList.textContent = "모든 문제를 맞히셨습니다!";
     } else {
-      wrongList.innerHTML = "<h4>❌ 틀린 문제:</h4><ul>" + wrong.map(q => `<li>${q.question}</li>`).join('') + "</ul>";
+      wrong.forEach((q, idx) => {
+        const div = document.createElement('div');
+        div.innerHTML = `<b>${idx+1}. ${q.question}</b><br/>정답: ${
+          q.type === 'multiple' ? q.choices[q.answer] : JSON.stringify(q.answer)
+        }`;
+        wrongList.appendChild(div);
+      });
     }
 
-    // 기록 저장
-    const records = JSON.parse(localStorage.getItem('quizRecords') || '[]');
-    const newRecord = {
-      name: user,
-      score: score,
-      total: total,
-      time: Math.floor((endTime - startTime) / 1000),
-      date: new Date().toLocaleString()
+    restartBtn.onclick = () => {
+      location.href = "index.html";
     };
-    records.push(newRecord);
-    localStorage.setItem('quizRecords', JSON.stringify(records));
-
-    // 기록 표시
-    const recordList = document.getElementById("recordList");
-    recordList.innerHTML = "<ul>" + records.map(r =>
-      `<li>${r.date} - ${r.name}: ${r.score}/${r.total} (${r.time}초)</li>`
-    ).join("") + "</ul>";
   </script>
 </body>
 </html>
