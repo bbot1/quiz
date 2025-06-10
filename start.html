@@ -12,6 +12,10 @@
     <label for="username">이름을 입력하세요:</label><br/>
     <input type="text" id="username" placeholder="이름 입력" /><br/>
     <button id="startBtn" disabled>시작하기</button>
+    <div class="history">
+      <h3>📋 이전 기록</h3>
+      <div id="historyList"></div>
+    </div>
   </div>
   <script>
     const usernameInput = document.getElementById('username');
@@ -29,6 +33,17 @@
         location.href = 'index.html';
       }
     });
+
+    // 이전 기록 표시
+    const records = JSON.parse(localStorage.getItem('quizRecords') || '[]');
+    const historyList = document.getElementById("historyList");
+    if (records.length === 0) {
+      historyList.innerHTML = "<p>기록 없음</p>";
+    } else {
+      historyList.innerHTML = "<ul>" + records.map(r =>
+        `<li>${r.date} - ${r.name}: ${r.score}/${r.total} (${r.time}초)</li>`
+      ).join("") + "</ul>";
+    }
   </script>
 </body>
 </html>
