@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>퀴즈 결과</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="result-container">
+    <h2>퀴즈 결과</h2>
+    <div id="resultScore"></div>
+    <div id="resultTime"></div>
+    <div id="wrongList"></div>
+    <button onclick="location.href='start.html'">처음으로</button>
+  </div>
+  <script>
+    const user = localStorage.getItem('quizUser') || '익명';
+    const startTime = new Date(localStorage.getItem('quizStartTime'));
+    const endTime = new Date();
+    const score = localStorage.getItem('quizScore') || 0;
+    const total = localStorage.getItem('quizTotal') || 0;
+    const wrong = JSON.parse(localStorage.getItem('quizWrong') || '[]');
+
+    document.getElementById('resultScore').textContent = `점수: ${score} / ${total}`;
+    document.getElementById('resultTime').textContent = `걸린 시간: ${Math.floor((endTime - startTime) / 1000)}초`;
+    document.getElementById('wrongList').innerHTML = '<h3>틀린 문제 목록</h3>' + (wrong.length === 0 ? '<p>없음</p>' : '<ul>' + wrong.map(q => `<li>${q.question}</li>`).join('') + '</ul>');
+
+    // 기록 저장
+    const records = JSON.parse(localStorage.getItem('quizRecords') || '[]');
+    records.push({{
+      name: user,
+      score: score,
+      total: total,
+      time: Math.floor((endTime - startTime) / 1000),
+      date: new Date().toLocaleString()
+    }});
+    localStorage.setItem('quizRecords', JSON.stringify(records));
+  </script>
+</body>
+</html>
