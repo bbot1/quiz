@@ -1,46 +1,55 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>퀴즈 결과</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h2>퀴즈 결과</h2>
-    <p id="resultScore"></p>
-    <h3>틀린 문제 목록</h3>
+  <div class="result-screen">
+    <h1>결과</h1>
+    <p id="score"></p>
     <div id="wrongList"></div>
-    <button id="restartBtn">처음으로 돌아가기</button>
+    <h2>이전 결과 기록</h2>
+    <ul id="historyList"></ul>
+    <button onclick="goBack()">돌아가기</button>
   </div>
-
   <script>
-    const score = localStorage.getItem('quizScore');
-    const total = localStorage.getItem('quizTotal');
-    const wrong = JSON.parse(localStorage.getItem('quizWrong')) || [];
+    const score = localStorage.getItem("quizScore");
+    const total = localStorage.getItem("quizTotal");
+    const wrong = JSON.parse(localStorage.getItem("quizWrong") || "[]");
+    const user = localStorage.getItem("quizUser") || "익명";
+    const timestamp = new Date().toLocaleString();
 
-    const resultScore = document.getElementById('resultScore');
-    const wrongList = document.getElementById('wrongList');
-    const restartBtn = document.getElementById('restartBtn');
+    document.getElementById("score").textContent = `${user}님 점수: ${score} / ${total}`;
 
-    resultScore.textContent = `점수: ${score} / ${total}`;
-
-    if(wrong.length === 0) {
-      wrongList.textContent = "모든 문제를 맞히셨습니다!";
-    } else {
-      wrong.forEach((q, idx) => {
-        const div = document.createElement('div');
-        div.innerHTML = `<b>${idx+1}. ${q.question}</b><br/>정답: ${
-          q.type === 'multiple' ? q.choices[q.answer] : JSON.stringify(q.answer)
-        }`;
+    const wrongList = document.getElementById("wrongList");
+    if (wrong.length > 0) {
+      wrong.forEach((q, i) => {
+        const div = document.createElement("div");
+        div.innerHTML = `<b>${i + 1}. ${q.question}</b><br/>정답: ${q.answer}`;
         wrongList.appendChild(div);
       });
+    } else {
+      wrongList.innerHTML = "<p>틀린 문제가 없습니다!</p>";
     }
 
-    restartBtn.onclick = () => {
-      location.href = "index.html";
-    };
+    const history = JSON.parse(localStorage.getItem("quizHistory") || "[]");
+    history.push({ user, score, total, timestamp });
+    localStorage.setItem("quizHistory", JSON.stringify(history));
+
+    const historyList = document.getElementById("historyList");
+    history.slice(-5).reverse().forEach(h => {
+      const li = document.createElement("li");
+      li.textContent = `${h.timestamp} - ${h.user}: ${h.score}/${h.total}`;
+      historyList.appendChild(li);
+    });
+
+    function goBack() {
+      window.location.href = "start.html";
+    }
   </script>
 </body>
 </html>

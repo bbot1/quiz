@@ -10,6 +10,15 @@ const progressEl = document.getElementById("progress");
 const userNameEl = document.getElementById("userName");
 let selectedChoice = null;
 
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+shuffle(quizData);
+
 function updateProgress() {
   progressEl.textContent = `문제 ${current + 1} / ${quizData.length}`;
 }
@@ -33,8 +42,7 @@ function renderQuestion() {
       btn.textContent = `${index + 1}. ${choice}`;
       btn.className = "choice-button";
       btn.onclick = () => {
-        // 선택 표시
-        if(selectedChoice !== null) return; // 한번만 선택 가능
+        if (selectedChoice !== null) return;
         selectedChoice = index;
         btn.classList.add("selected");
       };
@@ -45,35 +53,33 @@ function renderQuestion() {
     input.type = "text";
     input.placeholder = "정답 입력";
     quizEl.appendChild(input);
-  } else if (q.type === "match") {
-    quizEl.innerHTML += "<p>(짝맞추기 문제는 다음 버전에 구현 예정입니다.)</p>";
   }
   updateProgress();
 }
 
 function next() {
-  if(current >= quizData.length) return;
+  if (current >= quizData.length) return;
   const q = quizData[current];
 
-  if(q.type === "multiple") {
-    if(selectedChoice === null) {
+  if (q.type === "multiple") {
+    if (selectedChoice === null) {
       alert("보기 중 하나를 선택하세요.");
       return;
     }
-    if(selectedChoice === q.answer) score++;
+    if (selectedChoice === q.answer) score++;
     else wrongAnswers.push(q);
-  } else if(q.type === "short") {
+  } else if (q.type === "short") {
     const input = quizEl.querySelector("input");
     const ans = input.value.trim();
-    if(ans === "") {
+    if (ans === "") {
       alert("답을 입력하세요.");
       return;
     }
-    if(q.answer.some(a => a === ans)) score++;
+    if (q.answer.some(a => a === ans)) score++;
     else wrongAnswers.push(q);
   }
   current++;
-  if(current < quizData.length) {
+  if (current < quizData.length) {
     renderQuestion();
   } else {
     finishQuiz();

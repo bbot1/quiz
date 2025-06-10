@@ -1,36 +1,21 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>조경기사 퀴즈 시작</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>조경기사 퀴즈</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>조경기사 퀴즈 시작하기</h1>
-    <label for="userNameInput">이름 입력:</label>
-    <input type="text" id="userNameInput" placeholder="이름을 입력하세요" />
-    <button id="startBtn">시작하기</button>
+  <div id="quiz-container">
+    <p id="userName"></p>
+    <div id="progress"></div>
+    <div id="quiz"></div>
+    <button id="nextButton">다음</button>
+    <button id="giveUpBtn">포기</button>
   </div>
-
   <script src="quizData.js"></script>
-  <script>
-    document.getElementById('startBtn').onclick = () => {
-      const name = document.getElementById('userNameInput').value.trim() || "익명";
-      localStorage.setItem('quizUser', name);
-
-      // quizData를 랜덤 섞기
-      const shuffled = quizData.sort(() => Math.random() - 0.5);
-      localStorage.setItem('quizData', JSON.stringify(shuffled));
-
-      // 초기 점수, 현재 문제, 오답 초기화
-      localStorage.setItem('quizScore', '0');
-      localStorage.setItem('quizCurrent', '0');
-      localStorage.setItem('quizWrong', JSON.stringify([]));
-
-      location.href = "quiz.html";
-    };
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
