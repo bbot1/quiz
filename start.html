@@ -2,48 +2,35 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>조경기사 퀴즈 시작</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="start-container">
-    <h2>조경기사 퀴즈</h2>
-    <label for="username">이름을 입력하세요:</label><br/>
-    <input type="text" id="username" placeholder="이름 입력" /><br/>
-    <button id="startBtn" disabled>시작하기</button>
-    <div class="history">
-      <h3>📋 이전 기록</h3>
-      <div id="historyList"></div>
-    </div>
+  <div class="container">
+    <h1>조경기사 퀴즈 시작하기</h1>
+    <label for="userNameInput">이름 입력:</label>
+    <input type="text" id="userNameInput" placeholder="이름을 입력하세요" />
+    <button id="startBtn">시작하기</button>
   </div>
+
+  <script src="quizData.js"></script>
   <script>
-    const usernameInput = document.getElementById('username');
-    const startBtn = document.getElementById('startBtn');
+    document.getElementById('startBtn').onclick = () => {
+      const name = document.getElementById('userNameInput').value.trim() || "익명";
+      localStorage.setItem('quizUser', name);
 
-    usernameInput.addEventListener('input', () => {
-      startBtn.disabled = usernameInput.value.trim() === '';
-    });
+      // quizData를 랜덤 섞기
+      const shuffled = quizData.sort(() => Math.random() - 0.5);
+      localStorage.setItem('quizData', JSON.stringify(shuffled));
 
-    startBtn.addEventListener('click', () => {
-      const name = usernameInput.value.trim();
-      if(name) {
-        localStorage.setItem('quizUser', name);
-        localStorage.setItem('quizStartTime', new Date().toISOString());
-        location.href = 'index.html';
-      }
-    });
+      // 초기 점수, 현재 문제, 오답 초기화
+      localStorage.setItem('quizScore', '0');
+      localStorage.setItem('quizCurrent', '0');
+      localStorage.setItem('quizWrong', JSON.stringify([]));
 
-    // 이전 기록 표시
-    const records = JSON.parse(localStorage.getItem('quizRecords') || '[]');
-    const historyList = document.getElementById("historyList");
-    if (records.length === 0) {
-      historyList.innerHTML = "<p>기록 없음</p>";
-    } else {
-      historyList.innerHTML = "<ul>" + records.map(r =>
-        `<li>${r.date} - ${r.name}: ${r.score}/${r.total} (${r.time}초)</li>`
-      ).join("") + "</ul>";
-    }
+      location.href = "quiz.html";
+    };
   </script>
 </body>
 </html>
