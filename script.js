@@ -17,6 +17,14 @@ function shuffle(array) {
   }
 }
 
+const reviewMode = localStorage.getItem("reviewMode") === "true";
+if (reviewMode) {
+  const review = JSON.parse(localStorage.getItem("reviewQuestions") || "[]");
+  quizData.length = 0;
+  quizData.push(...review);
+  localStorage.removeItem("reviewMode");
+  localStorage.removeItem("reviewQuestions");
+}
 shuffle(quizData);
 
 function updateProgress() {
@@ -27,22 +35,19 @@ function renderQuestion() {
   const q = quizData[current];
   quizEl.innerHTML = "";
   selectedChoice = null;
-
   const qNumEl = document.createElement("h3");
   qNumEl.textContent = `문제 ${current + 1}`;
   quizEl.appendChild(qNumEl);
-
   const qTextEl = document.createElement("p");
   qTextEl.textContent = q.question;
   quizEl.appendChild(qTextEl);
-
   if (q.type === "multiple") {
     q.choices.forEach((choice, index) => {
       const btn = document.createElement("button");
       btn.textContent = `${index + 1}. ${choice}`;
       btn.className = "choice-button";
       btn.onclick = () => {
-        if (selectedChoice !== null) return;
+        if(selectedChoice !== null) return;
         selectedChoice = index;
         btn.classList.add("selected");
       };
@@ -58,28 +63,27 @@ function renderQuestion() {
 }
 
 function next() {
-  if (current >= quizData.length) return;
+  if(current >= quizData.length) return;
   const q = quizData[current];
-
-  if (q.type === "multiple") {
-    if (selectedChoice === null) {
+  if(q.type === "multiple") {
+    if(selectedChoice === null) {
       alert("보기 중 하나를 선택하세요.");
       return;
     }
-    if (selectedChoice === q.answer) score++;
+    if(selectedChoice === q.answer) score++;
     else wrongAnswers.push(q);
-  } else if (q.type === "short") {
+  } else if(q.type === "short") {
     const input = quizEl.querySelector("input");
     const ans = input.value.trim();
-    if (ans === "") {
+    if(ans === "") {
       alert("답을 입력하세요.");
       return;
     }
-    if (q.answer.some(a => a === ans)) score++;
+    if(q.answer.some(a => a === ans)) score++;
     else wrongAnswers.push(q);
   }
   current++;
-  if (current < quizData.length) {
+  if(current < quizData.length) {
     renderQuestion();
   } else {
     finishQuiz();

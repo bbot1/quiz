@@ -2,26 +2,36 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>퀴즈 시작</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>시작하기</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="start-screen">
+  <div id="start-container">
     <h1>조경기사 퀴즈</h1>
     <input type="text" id="nameInput" placeholder="이름을 입력하세요" />
     <button onclick="startQuiz()">시작하기</button>
+    <button onclick="reviewQuiz()">복습 퀴즈 (틀린 문제)</button>
   </div>
   <script>
     function startQuiz() {
-      const name = document.getElementById("nameInput").value.trim();
-      if (!name) {
-        alert("이름을 입력해주세요.");
+      const name = document.getElementById("nameInput").value.trim() || "익명";
+      localStorage.setItem("quizUser", name);
+      localStorage.removeItem("reviewMode");
+      location.href = "index.html";
+    }
+    function reviewQuiz() {
+      const review = JSON.parse(localStorage.getItem("quizWrong") || "[]");
+      if (!review.length) {
+        alert("복습할 문제가 없습니다.");
         return;
       }
+      const name = document.getElementById("nameInput").value.trim() || "익명";
       localStorage.setItem("quizUser", name);
-      window.location.href = "index.html";
+      localStorage.setItem("reviewMode", "true");
+      localStorage.setItem("reviewQuestions", JSON.stringify(review));
+      location.href = "index.html";
     }
   </script>
 </body>
