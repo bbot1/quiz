@@ -1,19 +1,32 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>문제 풀기</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div id="quiz-container">
-    <div id="userName"></div>
-    <div id="progress"></div>
-    <div id="quiz"></div>
-    <button id="nextButton">다음</button>
-    <button id="giveUpBtn">포기</button>
-  </div>
-  <script src="quizData.js"></script>
-  <script src="script.js"></script>
-</body>
-</html>
+const quizData = [
+  {
+    type: "multiple",
+    question: "조경의 정의는?",
+    choices: ["경치를 보는 것", "공원 만들기", "자연과 인간이 어우러지는 공간 설계", "건축 공학", "수목학"],
+    answer: 2
+  },
+  {
+    type: "short",
+    question: "식재기반 조성 시 토양 품질 시험 의뢰는 몇 개월 이내에 해야 하는가?",
+    answer: ["6", "6개월"]
+  },
+  {
+    type: "group",
+    question: "다음 항목을 보기에서 알맞은 설명과 연결하세요.",
+    pairs: ["ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ"],
+    choices: [
+      "주변 자연 조건이나 사회적 배경을 고려한 개념",
+      "형태나 구조를 시각적으로 설명하는 개념",
+      "공간요소를 조합하여 질서를 만드는 개념",
+      "기능과 역할 중심의 개념",
+      "형태보다는 의미 중심의 추상적 개념"
+    ],
+    answer: {
+      "ㄱ": "1",
+      "ㄴ": "2",
+      "ㄷ": "3",
+      "ㄹ": "4",
+      "ㅁ": "5"
+    }
+  }
+];
