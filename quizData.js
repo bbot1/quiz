@@ -1,32 +1,19 @@
-const quizData = [
-  {
-    type: "multiple",
-    question: "다음 중 조경 수목으로 적절하지 않은 것은?",
-    choices: ["소나무", "느티나무", "무궁화", "바오밥나무", "은행나무"],
-    answer: 3
-  },
-  {
-    type: "short",
-    question: "조경계획에서 '동선'이란 무엇을 의미하는가?",
-    answer: ["사람의 이동 경로", "이동 경로"]
-  },
-  {
-    type: "group",
-    question: "다음 항목을 보기에서 알맞은 설명과 연결하세요.",
-    pairs: ["ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ"],
-    choices: [
-      "주변 자연 조건이나 사회적 배경을 고려한 개념",
-      "형태나 구조를 시각적으로 설명하는 개념",
-      "공간요소를 조합하여 질서를 만드는 개념",
-      "기능과 역할 중심의 개념",
-      "형태보다는 의미 중심의 추상적 개념"
-    ],
-    answer: {
-      "ㄱ": "1",
-      "ㄴ": "2",
-      "ㄷ": "3",
-      "ㄹ": "4",
-      "ㅁ": "5"
-    }
-  }
-];
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>문제 풀기</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="quiz-container">
+    <div id="userName"></div>
+    <div id="progress"></div>
+    <div id="quiz"></div>
+    <button id="nextButton">다음</button>
+    <button id="giveUpBtn">포기</button>
+  </div>
+  <script src="quizData.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
