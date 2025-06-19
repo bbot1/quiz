@@ -1,14 +1,14 @@
 const quizData = [
   {
     type: "multiple",
-    question: "조경의 정의는?",
-    choices: ["경치를 보는 것", "공원 만들기", "자연과 인간이 어우러지는 공간 설계", "건축 공학", "수목학"],
-    answer: 2
+    question: "다음 중 조경 수목으로 적절하지 않은 것은?",
+    choices: ["소나무", "느티나무", "무궁화", "바오밥나무", "은행나무"],
+    answer: 3
   },
   {
     type: "short",
-    question: "식재기반 조성 시 토양 품질 시험 의뢰는 몇 개월 이내에 해야 하는가?",
-    answer: ["6", "6개월"]
+    question: "조경계획에서 '동선'이란 무엇을 의미하는가?",
+    answer: ["사람의 이동 경로", "이동 경로"]
   },
   {
     type: "group",
