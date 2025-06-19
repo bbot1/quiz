@@ -3,21 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <title>퀴즈 시작</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="start-container">
     <h1>조경기사 퀴즈</h1>
     <input type="text" id="nameInput" placeholder="이름을 입력하세요" />
     <button onclick="startQuiz()">시작하기</button>
+    <button onclick="reviewQuiz()">복습 퀴즈 (틀린 문제)</button>
   </div>
   <script>
     function startQuiz() {
       const name = document.getElementById("nameInput").value.trim();
-      if (!name) {
-        alert("이름을 입력해주세요.");
-        return;
-      }
+      if (!name) return alert("이름을 입력해주세요.");
       localStorage.setItem("quizUser", name);
+      localStorage.removeItem("reviewMode");
+      location.href = "quiz.html";
+    }
+    function reviewQuiz() {
+      const review = JSON.parse(localStorage.getItem("quizWrong")||"[]");
+      if (!review.length) return alert("복습할 문제가 없습니다.");
+      const name = document.getElementById("nameInput").value.trim() || "익명";
+      localStorage.setItem("quizUser", name);
+      localStorage.setItem("reviewMode", "true");
+      localStorage.setItem("reviewQuestions", JSON.stringify(review));
       location.href = "quiz.html";
     }
   </script>
