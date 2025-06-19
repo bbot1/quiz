@@ -1,43 +1,30 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>결과 보기</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>결과</title>
 </head>
 <body>
   <div id="result-container">
-    <h2>퀴즈 결과</h2>
-    <p id="userScore"></p>
-    <div id="wrongList"></div>
-    <h3>기록</h3>
-    <ul id="historyList"></ul>
-    <button onclick="location.href='start.html'">처음으로</button>
+    <h1>퀴즈 결과</h1>
+    <div id="result"></div>
+    <button onclick="location.href='index.html'">처음으로</button>
   </div>
   <script>
-    const score = localStorage.getItem("quizScore");
-    const total = localStorage.getItem("quizTotal");
-    const wrong = JSON.parse(localStorage.getItem("quizWrong") || "[]");
-    const user = localStorage.getItem("quizUser") || "익명";
-    const time = new Date().toLocaleString();
-    document.getElementById("userScore").textContent = `${user}님의 점수: ${score} / ${total}`;
-    const wrongList = document.getElementById("wrongList");
-    wrong.forEach((q, i) => {
-      const div = document.createElement("div");
-      div.innerHTML = `<strong>문제:</strong> ${q.question}<br/><strong>정답:</strong> ${q.choices ? q.choices[q.answer] : q.answer.join(", ")}`;
-      wrongList.appendChild(div);
-    });
-    const history = JSON.parse(localStorage.getItem("quizHistory") || "[]");
-    history.push({ user, score, total, time });
-    localStorage.setItem("quizHistory", JSON.stringify(history));
-    const ul = document.getElementById("historyList");
-    history.slice().reverse().forEach(h => {
-      const li = document.createElement("li");
-      li.textContent = `${h.time} - ${h.user}: ${h.score}/${h.total}`;
-      ul.appendChild(li);
-    });
+    window.onload = () => {
+      const score = localStorage.getItem('quizScore');
+      const total = localStorage.getItem('quizTotal');
+      const wrong = JSON.parse(localStorage.getItem('quizWrong') || '[]');
+      let html = `<p>점수: ${score} / ${total}</p>`;
+      if (wrong.length > 0) {
+        html += `<h3>틀린 문제</h3><ol>`;
+        wrong.forEach(q => {
+          html += `<li>${q.question}</li>`;
+        });
+        html += `</ol>`;
+      }
+      document.getElementById('result').innerHTML = html;
+    };
   </script>
 </body>
 </html>
