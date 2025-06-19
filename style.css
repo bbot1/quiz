@@ -1,9 +1,9 @@
-
 body {
   font-family: Arial, sans-serif;
   padding: 20px;
   background: #f4f4f4;
 }
+
 #quiz-container, #start-container, #result-container {
   background: white;
   padding: 20px;
@@ -12,6 +12,7 @@ body {
   margin: auto;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
+
 button {
   display: block;
   margin: 10px 0;
@@ -23,9 +24,28 @@ button {
   color: white;
   font-size: 16px;
 }
+
 .choice-button {
   text-align: left;
 }
+
 .selected {
   background-color: #28a745 !important;
+}
+
+.group-input {
+  width: 60px;
+  padding: 4px;
+  margin-left: 8px;
+}
+
+table {
+  width: 100%;
+  margin-bottom: 10px;
+  border-collapse: collapse;
+}
+
+td {
+  padding: 8px 4px;
+  vertical-align: top;
 }
