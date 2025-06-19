@@ -1,21 +1,25 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>조경기사 퀴즈</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>퀴즈 시작</title>
 </head>
 <body>
-  <div id="quiz-container">
-    <p id="userName"></p>
-    <div id="progress"></div>
-    <div id="quiz"></div>
-    <button id="nextButton">다음</button>
-    <button id="giveUpBtn">포기</button>
+  <div id="start-container">
+    <h1>조경기사 퀴즈</h1>
+    <input type="text" id="nameInput" placeholder="이름을 입력하세요" />
+    <button onclick="startQuiz()">시작하기</button>
   </div>
-  <script src="quizData.js"></script>
-  <script src="script.js"></script>
+  <script>
+    function startQuiz() {
+      const name = document.getElementById("nameInput").value.trim();
+      if (!name) {
+        alert("이름을 입력해주세요.");
+        return;
+      }
+      localStorage.setItem("quizUser", name);
+      location.href = "quiz.html";
+    }
+  </script>
 </body>
 </html>
