@@ -35,6 +35,8 @@ function renderQuestion() {
   quizEl.innerHTML = "";
   selectedChoice = null;
 
+  userNameEl.textContent = `사용자: ${userName}`;
+
   const qNumEl = document.createElement("h3");
   qNumEl.textContent = `문제 ${current + 1}`;
   quizEl.appendChild(qNumEl);
@@ -49,7 +51,7 @@ function renderQuestion() {
       btn.textContent = `${index + 1}. ${choice}`;
       btn.className = "choice-button";
       btn.onclick = () => {
-        if(selectedChoice !== null) return;
+        if (selectedChoice !== null) return;
         selectedChoice = index;
         btn.classList.add("selected");
       };
@@ -61,45 +63,33 @@ function renderQuestion() {
     input.placeholder = "정답 입력";
     quizEl.appendChild(input);
   } else if (q.type === "group") {
-    const list = document.createElement("div");
-    list.className = "group-question";
-
     const pairTable = document.createElement("table");
-    pairTable.style.width = "100%";
-    pairTable.style.textAlign = "left";
-
     q.pairs.forEach(pair => {
       const row = document.createElement("tr");
-
       const labelCell = document.createElement("td");
       labelCell.textContent = pair;
       labelCell.style.fontWeight = "bold";
-
       const inputCell = document.createElement("td");
-      const input = document.createElement("input");
-      input.type = "number";
-      input.min = 1;
-      input.max = q.choices.length;
-      input.placeholder = "보기 번호 입력";
-      input.dataset.key = pair;
-      input.classList.add("group-input");
-
-      inputCell.appendChild(input);
+      const inp = document.createElement("input");
+      inp.type = "number";
+      inp.min = 1;
+      inp.max = q.choices.length;
+      inp.placeholder = "번호";
+      inp.dataset.key = pair;
+      inp.classList.add("group-input");
+      inputCell.appendChild(inp);
       row.appendChild(labelCell);
       row.appendChild(inputCell);
       pairTable.appendChild(row);
     });
-
-    list.appendChild(pairTable);
+    quizEl.appendChild(pairTable);
 
     const choiceList = document.createElement("ul");
-    q.choices.forEach((choice, index) => {
+    q.choices.forEach((choice, idx) => {
       const li = document.createElement("li");
-      li.textContent = `${index + 1}. ${choice}`;
+      li.textContent = `${idx + 1}. ${choice}`;
       choiceList.appendChild(li);
     });
-
-    quizEl.appendChild(list);
     quizEl.appendChild(choiceList);
   }
 
@@ -107,58 +97,43 @@ function renderQuestion() {
 }
 
 function next() {
-  if(current >= quizData.length) return;
+  if (current >= quizData.length) return;
   const q = quizData[current];
 
-  if(q.type === "multiple") {
-    if(selectedChoice === null) {
+  if (q.type === "multiple") {
+    if (selectedChoice === null) {
       alert("보기 중 하나를 선택하세요.");
       return;
     }
-    if(selectedChoice === q.answer) score++;
+    if (selectedChoice === q.answer) score++;
     else wrongAnswers.push(q);
-  } else if(q.type === "short") {
-    const input = quizEl.querySelector("input");
-    const ans = input.value.trim();
-    if(ans === "") {
-      alert("답을 입력하세요.");
-      return;
-    }
-    if(q.answer.some(a => a === ans)) score++;
+  } else if (q.type === "short") {
+    const ans = quizEl.querySelector("input").value.trim();
+    if (!ans) return alert("답을 입력하세요.");
+    if (q.answer.includes(ans)) score++;
     else wrongAnswers.push(q);
-  } else if(q.type === "group") {
+  } else if (q.type === "group") {
     const inputs = quizEl.querySelectorAll(".group-input");
+    if ([...inputs].some(i => !i.value.trim())) {
+      return alert("모든 항목에 번호를 입력하세요.");
+    }
     let correct = true;
-
-    for (const input of inputs) {
-      const key = input.dataset.key;
-      const value = input.value.trim();
-      if (!value || value !== q.answer[key]) {
-        correct = false;
-      }
-    }
-
-    if (Array.from(inputs).some(i => i.value.trim() === "")) {
-      alert("모든 항목에 답을 입력하세요.");
-      return;
-    }
-
+    inputs.forEach(i => {
+      if (i.value.trim() !== q.answer[i.dataset.key]) correct = false;
+    });
     if (correct) score++;
     else wrongAnswers.push(q);
   }
 
   current++;
-  if(current < quizData.length) {
-    renderQuestion();
-  } else {
-    finishQuiz();
-  }
+  if (current < quizData.length) renderQuestion();
+  else finishQuiz();
 }
 
 function finishQuiz() {
-  localStorage.setItem('quizScore', score);
-  localStorage.setItem('quizTotal', quizData.length);
-  localStorage.setItem('quizWrong', JSON.stringify(wrongAnswers));
+  localStorage.setItem("quizScore", score);
+  localStorage.setItem("quizTotal", quizData.length);
+  localStorage.setItem("quizWrong", JSON.stringify(wrongAnswers));
   location.href = "result.html";
 }
 
@@ -169,7 +144,4 @@ function giveUp() {
 nextBtn.onclick = next;
 giveUpBtn.onclick = giveUp;
 
-window.onload = () => {
-  userNameEl.textContent = `사용자: ${userName}`;
-  renderQuestion();
-};
+window.onload = renderQuestion;
