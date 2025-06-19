@@ -1,4 +1,5 @@
 const quizData = [
+  // 1) 객관식
   {
     type: "multiple",
     question: "다음 중 개념의 정의와 가정 거리가 먼 것을 고르시오.",
@@ -8,9 +9,11 @@ const quizData = [
       "의뢰인과 이용자 등에 설계안을 확신시키는 힘",
       "설계를 통해 던지고 싶은 메시지"
     ],
-    // CSV answer=5 → zero-based index 4
+    // answer=5 → zero-based index 4
     answer: 4
   },
+
+  // 2) 연결형
   {
     type: "group",
     question: "개념의 유형을 바르게 연결하시오.",
@@ -21,7 +24,13 @@ const quizData = [
       "㉣.형태적 개념",
       "㉤.기능적 개념"
     ],
-    choices: [],  // 별도 설명 보기 없음
+    choices: [
+      "자연적 조건이나 사회적 상황을 표현하는 개념",
+      "특성, 특징, 특질, 속성, 관계 등으로 나타내는개념",
+      "공간요소, 형태들을 규칙이나 질서를 기준으로 배치 개념",
+      "공간의 전체적 또는 부분적 기능을 의미하는 개념",
+      "대상물의 형태를 의미하거나 형태와 연관성이 강한 개념"
+    ],
     answer: {
       "ㄱ": "2",
       "ㄴ": "1",
@@ -30,6 +39,8 @@ const quizData = [
       "ㅁ": "4"
     }
   },
+
+  // 3) 객관식: 추상적 개념 설명
   {
     type: "multiple",
     question: "추상적 개념에 대한 설명으로 바른 것을 고르시오.",
@@ -39,9 +50,11 @@ const quizData = [
       "공간 요소들을 일정한 규칙이나 질서를 기준으로 구성, 배치, 조합하는 개념",
       "대상물의 형태를 표현하거나 형태와 관련된 시각적 암시를 포함하고 있는 개념"
     ],
-    // CSV answer=2 → zero-based index 1
+    // answer=2 → zero-based index 1
     answer: 1
   },
+
+  // 4) 객관식: 환경적 개념 설명
   {
     type: "multiple",
     question: "환경적 개념에 대한 설명으로 바른 것을 고르시오.",
@@ -51,9 +64,11 @@ const quizData = [
       "공간 요소들을 일정한 규칙이나 질서를 기준으로 구성, 배치, 조합하는 개념",
       "대상물의 형태를 표현하거나 형태와 관련된 시각적 암시를 포함하고 있는 개념"
     ],
-    // CSV answer=1 → zero-based index 0
+    // answer=1 → zero-based index 0
     answer: 0
   },
+
+  // 5) 객관식: 형태적 개념 설명
   {
     type: "multiple",
     question: "형태적 개념에 대한 설명으로 바른 것을 고르시오.",
@@ -63,9 +78,11 @@ const quizData = [
       "공간 요소들을 일정한 규칙이나 질서를 기준으로 구성, 배치, 조합하는 개념",
       "대상물의 형태를 표현하거나 형태와 관련된 시각적 암시를 포함하고 있는 개념"
     ],
-    // CSV answer=4 → zero-based index 3
+    // answer=4 → zero-based index 3
     answer: 3
   },
+
+  // 6) 객관식: 구성적 개념 설명
   {
     type: "multiple",
     question: "구성적 개념에 대한 설명으로 바른 것을 고르시오.",
@@ -75,9 +92,11 @@ const quizData = [
       "공간 요소들을 일정한 규칙이나 질서를 기준으로 구성, 배치, 조합하는 개념",
       "대상물의 형태를 표현하거나 형태와 관련된 시각적 암시를 포함하고 있는 개념"
     ],
-    // CSV answer=3 → zero-based index 2
+    // answer=3 → zero-based index 2
     answer: 2
   },
+
+  // 7) 단답형
   {
     type: "short",
     question: "조경 설계에서 '동선'이란 무엇을 의미하는가?",
