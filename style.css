@@ -1,4 +1,4 @@
-/* 전체 페이지 배경 및 기본 폰트 */
+/* 전체 페이지 기본 설정 */
 body {
   font-family: Arial, sans-serif;
   padding: 20px;
@@ -51,7 +51,7 @@ button:hover {
   cursor: pointer;
 }
 
-/* 객관식 보기 버튼 호버 */
+/* 객관식 보기 호버 */
 .choice-button:hover {
   background-color: #f0f8ff;
 }
@@ -69,3 +69,25 @@ button:hover {
   padding: 6px 12px;
   font-size: 13px;
 }
+
+/* 진행도 표시 */
+#progress {
+  margin-bottom: 12px;
+  font-weight: bold;
+}
+
+/* 사용자 이름 표시 */
+#userName {
+  margin-bottom: 8px;
+  font-style: italic;
+}
+
+/* 연결형(Group) UI 레이아웃 */
+.group-ui {
+  display: flex;
+  flex-wrap: wrap;      /* 칼럼이 화면에 맞게 줄 바꿈 */
+  gap: 16px;
+  margin: 16px 0;
+}
+
+/* 연결형 왼쪽/오른쪽 칼럼 너비 *
