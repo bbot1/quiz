@@ -2,12 +2,12 @@ let current = 0;
 let score = 0;
 let wrongAnswers = [];
 let userName = localStorage.getItem('quizUser') || '익명';
+
 const quizEl = document.getElementById("quiz");
 const nextBtn = document.getElementById("nextButton");
 const giveUpBtn = document.getElementById("giveUpBtn");
 const progressEl = document.getElementById("progress");
 const userNameEl = document.getElementById("userName");
-let selectedChoice = null;
 
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -24,6 +24,7 @@ if (reviewMode) {
   localStorage.removeItem("reviewMode");
   localStorage.removeItem("reviewQuestions");
 }
+
 shuffle(quizData);
 
 function updateProgress() {
@@ -33,10 +34,10 @@ function updateProgress() {
 function renderQuestion() {
   const q = quizData[current];
   quizEl.innerHTML = "";
-  selectedChoice = null;
-
+  let selectedChoice = null;
   userNameEl.textContent = `사용자: ${userName}`;
 
+  // 문제 번호와 텍스트
   const qNumEl = document.createElement("h3");
   qNumEl.textContent = `문제 ${current + 1}`;
   quizEl.appendChild(qNumEl);
@@ -45,81 +46,95 @@ function renderQuestion() {
   qTextEl.textContent = q.question;
   quizEl.appendChild(qTextEl);
 
+  // multiple
   if (q.type === "multiple") {
-    q.choices.forEach((choice, index) => {
+    q.choices.forEach((choice, idx) => {
+      if (!choice) return;
       const btn = document.createElement("button");
-      btn.textContent = `${index + 1}. ${choice}`;
+      btn.textContent = `${idx + 1}. ${choice}`;
       btn.className = "choice-button";
       btn.onclick = () => {
         if (selectedChoice !== null) return;
-        selectedChoice = index;
+        selectedChoice = idx;
         btn.classList.add("selected");
       };
       quizEl.appendChild(btn);
     });
-  } else if (q.type === "short") {
+  }
+  // short
+  else if (q.type === "short") {
     const input = document.createElement("input");
     input.type = "text";
-    input.placeholder = "정답 입력";
+    input.placeholder = "정답을 입력하세요";
     quizEl.appendChild(input);
-  } else if (q.type === "group") {
-    const pairTable = document.createElement("table");
-    q.pairs.forEach(pair => {
-      const row = document.createElement("tr");
-      const labelCell = document.createElement("td");
-      labelCell.textContent = pair;
-      labelCell.style.fontWeight = "bold";
-      const inputCell = document.createElement("td");
+  }
+  // group
+  else if (q.type === "group") {
+    // 왼쪽 항목
+    const left = document.createElement("div");
+    left.className = "group-left";
+    q.pairs.forEach(item => {
+      const p = document.createElement("p");
+      p.textContent = `${item}`;
+      left.appendChild(p);
+    });
+    // 오른쪽 설명과 빈칸
+    const right = document.createElement("div");
+    right.className = "group-right";
+    q.choices.forEach(desc => {
+      const row = document.createElement("div");
       const inp = document.createElement("input");
-      inp.type = "number";
-      inp.min = 1;
-      inp.max = q.choices.length;
-      inp.placeholder = "번호";
-      inp.dataset.key = pair;
-      inp.classList.add("group-input");
-      inputCell.appendChild(inp);
-      row.appendChild(labelCell);
-      row.appendChild(inputCell);
-      pairTable.appendChild(row);
+      inp.type = "text";
+      inp.placeholder = "레이블 입력";
+      inp.dataset.desc = desc;
+      inp.className = "group-input";
+      const span = document.createElement("span");
+      span.textContent = desc;
+      row.appendChild(inp);
+      row.appendChild(span);
+      right.appendChild(row);
     });
-    quizEl.appendChild(pairTable);
-
-    const choiceList = document.createElement("ul");
-    q.choices.forEach((choice, idx) => {
-      const li = document.createElement("li");
-      li.textContent = `${idx + 1}. ${choice}`;
-      choiceList.appendChild(li);
-    });
-    quizEl.appendChild(choiceList);
+    const container = document.createElement("div");
+    container.className = "group-ui";
+    container.appendChild(left);
+    container.appendChild(right);
+    quizEl.appendChild(container);
   }
 
   updateProgress();
 }
 
 function next() {
-  if (current >= quizData.length) return;
   const q = quizData[current];
-
+  // multiple 채점
   if (q.type === "multiple") {
-    if (selectedChoice === null) {
-      alert("보기 중 하나를 선택하세요.");
-      return;
-    }
-    if (selectedChoice === q.answer) score++;
+    const selected = quizEl.querySelector(".selected");
+    if (!selected) return alert("보기 중 하나를 선택하세요.");
+    const idx = Array.from(quizEl.querySelectorAll(".choice-button")).indexOf(selected);
+    if (idx + 1 === q.answer) score++;
     else wrongAnswers.push(q);
-  } else if (q.type === "short") {
+  }
+  // short 채점
+  else if (q.type === "short") {
     const ans = quizEl.querySelector("input").value.trim();
     if (!ans) return alert("답을 입력하세요.");
     if (q.answer.includes(ans)) score++;
     else wrongAnswers.push(q);
-  } else if (q.type === "group") {
+  }
+  // group 채점
+  else if (q.type === "group") {
     const inputs = quizEl.querySelectorAll(".group-input");
-    if ([...inputs].some(i => !i.value.trim())) {
-      return alert("모든 항목에 번호를 입력하세요.");
-    }
+    if ([...inputs].some(i => !i.value.trim())) 
+      return alert("모든 빈칸에 레이블을 입력하세요.");
     let correct = true;
     inputs.forEach(i => {
-      if (i.value.trim() !== q.answer[i.dataset.key]) correct = false;
+      const userLabel = i.value.trim();
+      const desc = i.dataset.desc;
+      if (q.answer[userLabel] != null && q.answer[userLabel] == (q.choices.indexOf(desc)+1).toString()) {
+        // OK
+      } else {
+        correct = false;
+      }
     });
     if (correct) score++;
     else wrongAnswers.push(q);
