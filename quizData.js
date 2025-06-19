@@ -1,4 +1,3 @@
-
 const quizData = [
   {
     type: "multiple",
@@ -10,7 +9,7 @@ const quizData = [
     type: "short",
     question: "조경계획에서 '동선'이란 무엇을 의미하는가?",
     answer: ["사람의 이동 경로", "이동 경로"]
-  }
+  },
   {
     type: "group",
     question: "다음 항목을 보기에서 알맞은 설명과 연결하세요.",
@@ -29,5 +28,5 @@ const quizData = [
       "ㄹ": "4",
       "ㅁ": "5"
     }
-  },
+  }
 ];
