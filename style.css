@@ -12,22 +12,36 @@ body {
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-button {
+/* 객관식 보기 버튼 */
+.choice-button {
   display: block;
-  margin: 10px 0;
-  padding: 10px;
+  margin: 8px 0;
+  padding: 12px;
   width: 100%;
-  border: none;
+  font-size: 16px;
+  text-align: left;
+  border: 1px solid #007bff;
   border-radius: 5px;
+  background: white;
+  cursor: pointer;
+}
+.choice-button.selected {
   background-color: #007bff;
   color: white;
-  font-size: 16px;
 }
-.choice-button {
-  text-align: left;
+
+/* 다음/포기 버튼은 작게 */
+#nextButton,
+#giveUpBtn {
+  display: inline-block;
+  width: auto;
+  margin: 8px 8px 0 0;
+  padding: 8px 12px;
+  font-size: 14px;
+  background-color: #28a745;
 }
-.selected {
-  background-color: #28a745 !important;
+#giveUpBtn {
+  background-color: #dc3545;
 }
 
 /* 연결형 UI */
@@ -48,7 +62,7 @@ button {
   margin: 8px 0;
 }
 .group-input {
-  width: 60px;
+  width: 50px;
   padding: 4px;
   margin-right: 8px;
   text-align: center;
