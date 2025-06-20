@@ -133,3 +133,13 @@ body {
   align-items: center;
   margin: 4px 0;
 }
+
+.image-blank-input {
+  position: absolute;
+  padding: 4px;
+  border: 2px dashed #007bff;       /* 점선 테두리로 강조 */
+  border-radius: 4px;
+  background: rgba(255,255,255,0.9);
+  font-size: 14px;
+  text-align: center;
+}
