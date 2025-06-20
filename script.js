@@ -106,7 +106,40 @@ function renderQuestion() {
     container.appendChild(left); container.appendChild(right);
     quizEl.appendChild(container);
   }
+// renderQuestion() 안에 기존 유형 바로 다음에 추가
+else if (q.type === "image-blank") {
+  // 컨테이너 세팅
+  const container = document.createElement("div");
+  container.style.position = "relative";
+  container.style.maxWidth = "600px";
+  container.style.margin = "0 auto 20px";
+  quizEl.appendChild(container);
 
+  // 이미지
+  const img = document.createElement("img");
+  img.src = q.imageUrl;
+  img.style.width = "100%";
+  container.appendChild(img);
+
+  // 빈칸(input) 박스 생성
+  q.blanks.forEach(b => {
+    const inp = document.createElement("input");
+    inp.type = "text";
+    inp.placeholder = b.key;
+    inp.maxLength = 10;
+    inp.dataset.key = b.key;
+    inp.className = "image-blank-input";
+
+    // 위치 지정
+    inp.style.position = "absolute";
+    inp.style.left = b.x + "%";
+    inp.style.top = b.y + "%";
+    inp.style.width = b.width + "%";
+    inp.style.transform = "translate(-50%, -50%)";
+
+    container.appendChild(inp);
+  });
+}
   // restore previous answer
   setTimeout(restoreAnswer,0);
 }
