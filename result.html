@@ -2,12 +2,29 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>결과 테스트</title>
+  <title>결과 디버그</title>
 </head>
 <body>
-  <p>✅ 결과 페이지가 로드되었습니다!</p>
+  <h1>결과 디버그</h1>
+  <div id="summary"></div>
+  <pre id="rawWrong" style="background:#f0f0f0;padding:10px;"></pre>
+
   <script>
-    console.log("▶ 스크립트가 실행되었습니다!");
+    // 1) 로컬스토리지에서 읽기
+    const score = parseInt(localStorage.getItem('quizScore')) || 0;
+    const total = parseInt(localStorage.getItem('quizTotal')) || 0;
+    const wrong = JSON.parse(localStorage.getItem('quizWrong') || '[]');
+
+    // 2) 화면에 찍기
+    document.getElementById('summary').innerText =
+      `🔢 맞춘: ${score}, 전체: ${total}, 틀린 개수: ${wrong.length}`;
+
+    document.getElementById('rawWrong').innerText =
+      JSON.stringify(wrong, null, 2);
+
+    // 3) 콘솔에도 찍기
+    console.log('SUMMARY:', score, total, wrong.length);
+    console.log('WRONG RAW:', wrong);
   </script>
 </body>
 </html>
