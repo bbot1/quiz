@@ -13,11 +13,6 @@
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    #summary {
-      font-size: 16px;
-      margin: 10px 0 20px;
-      text-align: center;
-    }
     .wrong-item {
       margin-bottom: 30px;
       border-bottom: 1px solid #eee;
@@ -34,12 +29,13 @@
       cursor: default;
     }
     .choice-button {
-      margin: 6px 0;
-      padding: 10px;
+      margin: 4px 0;
+      padding: 8px;
       width: 100%;
       text-align: left;
-      border: 1px solid #007bff;
-      background: #fff;
+      border: 1px solid #ccc;
+      background: #f9f9f9;
+      color: #333;
       border-radius: 4px;
     }
     .choice-button.correct {
@@ -86,28 +82,29 @@
 <body>
   <div id="result-container">
     <h1>퀴즈 결과</h1>
-    <div id="summary"></div>
     <div id="wrongList"></div>
     <div id="pagination">
       <button id="prevPage">이전</button>
       <span id="pageInfo"></span>
       <button id="nextPage">다음</button>
     </div>
-    <div style="text-align:right; margin-top:20px;">
+    <div style="text-align:right;">
       <button onclick="location.href='index.html'">처음으로</button>
     </div>
   </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const score = parseInt(localStorage.getItem('quizScore')) || 0;
-      const total = parseInt(localStorage.getItem('quizTotal')) || 0;
       const wrong = JSON.parse(localStorage.getItem('quizWrong') || '[]');
+      const total = parseInt(localStorage.getItem('quizTotal')) || wrong.length;
       const wrongCount = wrong.length;
+      const score = total - wrongCount; // 맞춘 수 계산
 
-      // 1) 요약
-      document.getElementById('summary').innerHTML =
-        `맞춘: <strong>${score}</strong>  |  틀린: <strong>${wrongCount}</strong>  |  전체: <strong>${total}</strong>`;
+      // summary 표시
+      const summary = document.createElement('div');
+      summary.id = 'summary';
+      summary.innerHTML = `맞춘: <strong>${score}</strong>  |  틀린: <strong>${wrongCount}</strong>  |  전체: <strong>${total}</strong>`;
+      document.getElementById('result-container').insertBefore(summary, document.getElementById('wrongList'));
 
       const perPage = 3;
       let page = 0;
@@ -134,116 +131,76 @@
           const item = document.createElement('div');
           item.className = 'wrong-item';
 
-          // 문제 텍스트
           const h3 = document.createElement('h3');
           h3.textContent = `${i+1}. ${q.question}`;
           item.appendChild(h3);
 
-          // multiple
           if (q.type === 'multiple') {
+            const correctIdx = Number(q.answer);
+            const userIdx = Number(q.user);
             q.choices.forEach((ch, idx) => {
               const btn = document.createElement('div');
               btn.className = 'choice-button';
               btn.textContent = `${idx+1}. ${ch}`;
-              if (idx === q.user) btn.classList.add('wrong');
-              if (idx === q.answer) btn.classList.add('correct');
+              if (idx === correctIdx) btn.classList.add('correct');
+              if (idx === userIdx && userIdx !== correctIdx) btn.classList.add('wrong');
               item.appendChild(btn);
             });
-          }
-          // short
-          else if (q.type === 'short') {
+          } else if (q.type === 'short') {
             const div = document.createElement('div');
             div.className = 'choice-display';
             div.textContent = `내 답: ${q.user}  |  정답: ${q.answer.join(', ')}`;
             item.appendChild(div);
-          }
-          // ox
-          else if (q.type === 'ox') {
+          } else if (q.type === 'ox') {
             ['O','X'].forEach(lbl => {
               const btn = document.createElement('div');
               btn.className = 'choice-button';
               btn.textContent = lbl;
-              if (lbl === q.user) btn.classList.add(lbl===q.answer?'correct':'wrong');
               if (lbl === q.answer) btn.classList.add('correct');
+              if (lbl === q.user && q.user !== q.answer) btn.classList.add('wrong');
               item.appendChild(btn);
             });
-          }
-          // group
-          else if (q.type === 'group') {
-            const cont = document.createElement('div');
-            cont.className = 'group-ui';
-            const left = document.createElement('div');
-            left.className = 'group-left';
-            q.pairs.forEach(p => {
-              const pEl = document.createElement('p');
-              pEl.textContent = p;
-              left.appendChild(pEl);
-            });
-            const right = document.createElement('div');
-            right.className = 'group-right';
+          } else if (q.type === 'group') {
+            const cont = document.createElement('div'); cont.className = 'group-ui';
+            const left = document.createElement('div'); left.className = 'group-left';
+            q.pairs.forEach(p => { const pEl = document.createElement('p'); pEl.textContent = p; left.appendChild(pEl); });
+            const right = document.createElement('div'); right.className = 'group-right';
             q.pairs.forEach((key, idx) => {
               const row = document.createElement('div');
-              const inp = document.createElement('input');
-              inp.className = 'group-input';
-              inp.disabled = true;
-              inp.value = q.user[key] || '';
-              const span = document.createElement('span');
-              span.textContent = q.choices[idx];
-              row.append(inp, span);
-              right.appendChild(row);
+              const inp = document.createElement('input'); inp.className='group-input'; inp.disabled=true; inp.value=q.user[key]||'';
+              const span = document.createElement('span'); span.textContent=q.choices[idx];
+              row.append(inp, span); right.appendChild(row);
             });
-            cont.append(left, right);
-            item.appendChild(cont);
+            cont.append(left, right); item.appendChild(cont);
             const ansDiv = document.createElement('div');
-            ansDiv.innerHTML = '<strong>정답 매핑:</strong> ' +
-              Object.entries(q.answer).map(([k,v]) => `${k}: ${q.choices[v-1]}`).join(', ');
+            ansDiv.innerHTML='<strong>정답 매핑:</strong>' + Object.entries(q.answer).map(([k,v])=>`${k}: ${q.choices[v-1]}`).join(', ');
             item.appendChild(ansDiv);
-          }
-          // image-blank
-          else if (q.type === 'image-blank') {
-            const cont = document.createElement('div');
-            cont.style.position = 'relative';
-            cont.style.maxWidth = '100%';
-            const img = document.createElement('img');
-            img.src = q.imageUrl;
-            img.style.width = '100%';
-            cont.appendChild(img);
-            q.blanks.forEach(b => {
-              const inp = document.createElement('input');
-              inp.className = 'group-input';
-              inp.disabled = true;
-              inp.value = q.user[b.key] || '';
-              inp.style.position = 'absolute';
-              inp.style.left = `${b.x}%`;
-              inp.style.top = `${b.y}%`;
-              inp.style.width = `${b.width}%`;
-              inp.style.transform = 'translate(-50%,-50%)';
-              cont.appendChild(inp);
-            });
-            item.appendChild(cont);
-            const ansDiv2 = document.createElement('div');
-            ansDiv2.innerHTML = '<strong>정답:</strong> ' +
-              Object.entries(q.answer).map(([k,v]) => `${k}: ${v}`).join(', ');
+          } else if (q.type==='image-blank') {
+            const cont = document.createElement('div'); cont.style.position='relative'; cont.style.maxWidth='100%';
+            const img = document.createElement('img'); img.src=q.imageUrl; img.style.width='100%'; cont.appendChild(img);
+            q.blanks.forEach(b=>{
+              const inp=document.createElement('input'); inp.className='group-input'; inp.disabled=true; inp.value=q.user[b.key]||'';
+              inp.style.position='absolute'; inp.style.left=`${b.x}%`; inp.style.top=`${b.y}%`;
+              inp.style.width=`${b.width}%`; inp.style.transform='translate(-50%,-50%)'; cont.appendChild(inp);
+            }); item.appendChild(cont);
+            const ansDiv2=document.createElement('div');
+            ansDiv2.innerHTML='<strong>정답:</strong>'+Object.entries(q.answer).map(([k,v])=>`${k}: ${v}`).join(', ');
             item.appendChild(ansDiv2);
-          }
-          // sequence
-          else if (q.type==='sequence') {
-            const seq = document.createElement('div');
-            seq.textContent = q.choices.join(' → ');
-            seq.style.margin = '8px 0';
-            item.appendChild(seq);
+          } else if (q.type==='sequence') {
+            const seq=document.createElement('div'); seq.textContent=q.choices.join(' → ');
+            seq.style.margin='8px 0'; item.appendChild(seq);
           }
 
           wrongList.appendChild(item);
         }
 
-        pageInfo.textContent = `${page+1} / ${Math.ceil(wrong.length/perPage)}`;
-        prevPage.disabled = (page===0);
-        nextPage.disabled = (end>=wrong.length);
+        pageInfo.textContent=`${page+1} / ${Math.ceil(wrong.length/perPage)}`;
+        prevPage.disabled=(page===0);
+        nextPage.disabled=(end>=wrong.length);
       }
 
-      prevPage.onclick = () => { if (page>0) { page--; renderPage(); } };
-      nextPage.onclick = () => { if ((page+1)*perPage<wrong.length) { page++; renderPage(); } };
+      prevPage.onclick=()=>{if(page>0){page--;renderPage();}};
+      nextPage.onclick=()=>{if((page+1)*perPage<wrong.length){page++;renderPage();}};
 
       renderPage();
     });
