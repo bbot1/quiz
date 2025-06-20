@@ -47,7 +47,7 @@ const quizData = [
   {
     type: "image-blank",
     question: "아래 그림의 빈칸에 알맞은 용어를 입력하세요.",
-    imageUrl: "images/발병-메커니즘.png",
+    imageUrl: "images/발병매커니즘.png",
     blanks: [
       { key: "A", x: 50, y: 10, width: 20 },  // 위원형 안쪽
       { key: "B", x: 20, y: 60, width: 20 },  // 좌측 대원
