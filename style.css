@@ -143,3 +143,19 @@ body {
   font-size: 14px;
   text-align: center;
 }
+
+
+/* ::before로 키(A/B/C)를 표시 */
+.image-blank-input::before {
+  content: attr(data-key);
+  position: absolute;
+  top: -1.2em;   /* 입력칸 위 */
+  left: 50%;
+  transform: translateX(-50%);
+  background: #007bff;
+  color: white;
+  padding: 1px 4px;
+  font-size: 12px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
