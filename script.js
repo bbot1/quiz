@@ -165,6 +165,26 @@ function storeAnswer() {
     ans={}; correct=true;
     inputs.forEach(i=>{ans[i.dataset.key]=i.value.trim(); if(q.answer[i.dataset.key]!==i.value.trim())correct=false;});
   }
+  // image-blank 채점
+else if (q.type === "image-blank") {
+  const inputs = quizEl.querySelectorAll(".image-blank-input");
+  let allFilled = true, correct = true;
+  const ans = {};
+  inputs.forEach(inp => {
+    const k = inp.dataset.key;
+    const v = inp.value.trim();
+    if (!v) allFilled = false;
+    ans[k] = v;
+    if (v !== q.answer[k]) correct = false;
+  });
+  if (!allFilled) {
+    alert("모든 빈칸을 입력하세요.");
+    return false;
+  }
+  userAnswers[current] = ans;
+  if (!correct) wrongAnswers.push({ ...q, user: ans });
+  else score++;
+}
   userAnswers[current]=ans; if(!correct) wrongAnswers.push({...q, user:ans}); else score++;
   return true;
 }
