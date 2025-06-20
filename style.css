@@ -110,6 +110,14 @@ body {
 .group-left, .group-right {
   flex: 1;
 }
+.image-blank-input {
+  padding: 4px;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.9);
+  text-align: center;
+  font-size: 14px;
+}
 
 .group-input {
   width: 24px;
