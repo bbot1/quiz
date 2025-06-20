@@ -1,26 +1,19 @@
-body { font-family: Arial, sans-serif; background: #f4f4f4; margin:0; }
-#quiz-container { display:flex; max-width:900px; margin:20px auto; background:white; border-radius:8px; overflow:hidden; }
-#sidebar { width:150px; padding:20px; background:#fafafa; border-right:1px solid #eee; }
-#sidebar h4 { margin-top:0; font-size:16px; }
-.number-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-top:10px; }
-.number-button { width:32px; height:32px; border:1px solid #ccc; border-radius:50%; background:white; cursor:pointer; font-size:14px; }
-.number-button.answered { border-color:#28a745; }
-.number-button.current { background:#007bff; color:white; border-color:#0056b3; }
-#quiz-area { flex:1; padding:20px; display:flex; flex-direction:column; }
-#quiz-area header { display:flex; justify-content:space-between; margin-bottom:10px; }
-#quiz { flex:1; }
-#controls { text-align:right; margin-top:10px; }
-#controls button { margin-left:8px; }
-
-// === result.html ===
-<!DOCTYPE html>
-<html lang="ko">
-<head><meta charset="UTF-8"><title>결과</title><link rel="stylesheet" href="style.css"></head>
-<body><div id="result-container" style="max-width:600px;margin:40px auto;padding:20px;background:white;border-radius:8px;">
-  <h1>퀴즈 결과</h1><div id="singleWrong"></div><div style="text-align:right;margin-top:20px;"><button id="nextWrong">다음 틀린문제</button><button onclick="location.href='index.html'" style="margin-left:8px;">처음으로</button></div>
-</div><script>
-  const wrong = JSON.parse(localStorage.getItem('quizWrong')||'[]'); let idx=0; const single=document.getElementById('singleWrong'), nextW=document.getElementById('nextWrong');
-  function showWrong(){ if(idx>=wrong.length){ single.innerHTML='<p>틀린 문제가 없습니다!</p>'; nextW.style.display='none'; return; } const q=wrong[idx]; single.innerHTML=`<p>${idx+1}. ${q.question}</p><p>정답: ${q.type==='multiple'? q.choices[q.answer]: q.type==='ox'? q.answer: JSON.stringify(q.answer)}</p>`; }
-  nextW.onclick=()=>{ idx++; showWrong(); }; window.onload=showWrong;
-</script></body>
-</html>
+body{font-family:Arial,sans-serif;background:#f4f4f4;margin:0;}
+#quiz-container{display:flex;}
+#sidebar{width:140px;padding:10px;background:#fafafa;border-right:1px solid #ddd;}
+#sidebar h4{margin-top:0;font-size:14px;}
+.number-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+.number-button{width:28px;height:28px;border:1px solid #ccc;border-radius:50%;cursor:pointer;font-size:12px;}
+.number-button.answered{border-color:#28a745;}
+.number-button.current{background:#007bff;color:#fff;border-color:#0056b3;}
+#quiz-area{flex:1;padding:20px;}
+#quiz-area header{display:flex;justify-content:space-between;margin-bottom:8px;}
+#quiz{min-height:200px;}
+#controls{text-align:right;}
+#controls button{margin-left:8px;}
+.choice-button{display:block;margin:6px 0;padding:10px;width:100%;text-align:left;border:1px solid #007bff;border-radius:4px;background:#fff;cursor:pointer;}
+.choice-button.selected{background:#007bff;color:#fff;}
+.group-ui{display:flex;gap:10px;margin-top:10px;}
+.group-left, .group-right{flex:1;}
+.group-input{width:24px;padding:2px;margin-right:4px;text-align:center;border:1px solid #ccc;border-radius:3px;}
+.group-right div{display:flex;align-items:center;margin:4px 0;}
