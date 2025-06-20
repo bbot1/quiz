@@ -10,16 +10,18 @@ const prevBtn = document.getElementById("prevButton");
 const giveUpBtn = document.getElementById("giveUpBtn");
 const progressEl = document.getElementById("progress");
 const userNameEl = document.getElementById("userName");
-const answerList = document.getElementById("answerList");
+const answerGrid = document.getElementById("answerGrid");
 
-function updateSidebar() {
-  answerList.innerHTML = '';
-  quizData.forEach((q, idx) => {
-    const li = document.createElement('li');
-    li.textContent = (idx+1) + ": " + (userAnswers[idx] || '-');
-    li.onclick = () => { goToQuestion(idx); };
-    if(idx === current) li.classList.add('current');
-    answerList.appendChild(li);
+function updateGrid() {
+  answerGrid.innerHTML = '';
+  quizData.forEach((_, idx) => {
+    const btn = document.createElement('button');
+    btn.textContent = idx + 1;
+    btn.className = 'number-button';
+    if (userAnswers[idx] != null) btn.classList.add('answered');
+    if (idx === current) btn.classList.add('current');
+    btn.onclick = () => { goToQuestion(idx); };
+    answerGrid.appendChild(btn);
   });
 }
 
@@ -29,8 +31,14 @@ function goToQuestion(idx) {
 }
 
 prevBtn.onclick = () => {
-  if(current>0) { current--; renderQuestion(); }
+  if (current > 0) { current--; renderQuestion(); }
 };
+nextBtn.onclick = () => {
+  if (!storeAnswer()) return;
+  if (current < quizData.length - 1) { current++; renderQuestion(); }
+  else finishQuiz();
+};
+giveUpBtn.onclick = finishQuiz;
 
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -49,32 +57,69 @@ function renderQuestion() {
   quizEl.innerHTML = '';
   userNameEl.textContent = `사용자: ${userName}`;
   updateProgress();
-  updateSidebar();
+  updateGrid();
 
-  const qNum = document.createElement('h3'); qNum.textContent = `문제 ${current+1}`;
-  const qText = document.createElement('p'); qText.textContent = q.question;
+  const qNum = document.createElement('h3'); qNum.textContent = q.question;
   quizEl.appendChild(qNum);
-  quizEl.appendChild(qText);
 
-  // render choices based on type (multiple, short, ox, group) ... same as before
-  // after user selects or inputs answer, store in userAnswers[current]
-  // and when moving next or prev, reflect previous selection
-  // For brevity, reuse your existing render logic but assign/restore userAnswers[current].
+  // Render choice, short, group, ox as before
+  // After rendering input/buttons, restore previous answer:
+  setTimeout(() => restoreAnswer(), 0);
 }
 
-nextBtn.onclick = () => {
-  // before advancing, validate and store user answer
-  // if last question, finishQuiz(); else current++; renderQuestion();
-};
+function storeAnswer() {
+  const q = quizData[current];
+  let ans; let correct = false;
+  if (q.type === 'multiple') {
+    const btns = quizEl.querySelectorAll('.choice-button');
+    const idx = [...btns].findIndex(b => b.classList.contains('selected'));
+    if (idx < 0) { alert('보기 중 하나를 선택하세요.'); return false; }
+    ans = idx; correct = (idx + 1 === q.answer);
+  } else if (q.type === 'short') {
+    const val = quizEl.querySelector('input').value.trim();
+    if (!val) { alert('답을 입력하세요.'); return false; }
+    ans = val; correct = q.answer.includes(val);
+  } else if (q.type === 'ox') {
+    const btn = quizEl.querySelector('.choice-button.selected');
+    if (!btn) { alert('O 또는 X를 선택하세요.'); return false; }
+    ans = btn.textContent; correct = (ans === q.answer);
+  } else if (q.type === 'group') {
+    const inputs = quizEl.querySelectorAll('.group-input');
+    if ([...inputs].some(i=>!i.value.trim())) { alert('빈칸을 모두 채우세요.'); return false; }
+    ans = {};
+    for (let i of inputs) ans[i.dataset.key]=i.value.trim();
+    correct = true;
+    for (let k in q.answer) if (ans[k] !== q.answer[k]) correct = false;
+  }
+  userAnswers[current] = ans;
+  if (!correct) wrongAnswers.push({ ...q, user: ans }); else score++;
+  return true;
+}
 
-giveUpBtn.onclick = () => finishQuiz();
+function restoreAnswer() {
+  const q = quizData[current]; const prev = userAnswers[current];
+  if (prev == null) return;
+  if (q.type === 'multiple') {
+    const btns = quizEl.querySelectorAll('.choice-button');
+    if (btns[prev]) btns[prev].classList.add('selected');
+  } else if (q.type === 'short') {
+    const inp = quizEl.querySelector('input'); inp.value = prev;
+  } else if (q.type === 'ox') {
+    quizEl.querySelectorAll('.choice-button').forEach(b=>{
+      if (b.textContent === prev) b.classList.add('selected');
+    });
+  } else if (q.type === 'group') {
+    quizEl.querySelectorAll('.group-input').forEach(i=>{
+      i.value = prev[i.dataset.key] || '';
+    });
+  }
+}
 
 function finishQuiz() {
-  // show one-by-one wrong answers in result.html
   localStorage.setItem('quizScore', score);
   localStorage.setItem('quizTotal', quizData.length);
   localStorage.setItem('quizWrong', JSON.stringify(wrongAnswers));
-  location.href = "result.html";
+  location.href = 'result.html';
 }
 
 window.onload = renderQuestion;
