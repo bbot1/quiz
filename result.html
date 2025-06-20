@@ -1,30 +1,31 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>결과 디버그</title>
-</head>
-<body>
-  <h1>결과 디버그</h1>
-  <div id="summary"></div>
-  <pre id="rawWrong" style="background:#f0f0f0;padding:10px;"></pre>
-
-  <script>
-    // 1) 로컬스토리지에서 읽기
-    const score = parseInt(localStorage.getItem('quizScore')) || 0;
-    const total = parseInt(localStorage.getItem('quizTotal')) || 0;
-    const wrong = JSON.parse(localStorage.getItem('quizWrong') || '[]');
-
-    // 2) 화면에 찍기
-    document.getElementById('summary').innerText =
-      `🔢 맞춘: ${score}, 전체: ${total}, 틀린 개수: ${wrong.length}`;
-
-    document.getElementById('rawWrong').innerText =
-      JSON.stringify(wrong, null, 2);
-
-    // 3) 콘솔에도 찍기
-    console.log('SUMMARY:', score, total, wrong.length);
-    console.log('WRONG RAW:', wrong);
-  </script>
-</body>
-</html>
+[
+  {
+    "type": "multiple",
+    "question": "구성적 개념에 대한 설명으로 바른 것을 고르시오.",
+    "choices": [
+      "생물에게 직간접적으로 영향을 주는 자연적인 조건, 사회적 상황을 표현하는 개념",
+      "존재하는 사물을 통해 인지 후 특성, 특질, 속성, 관계, 형태 등으로 나타내는 개념",
+      "공간 요소들을 일정한 규칙이나 질서를 기준으로 구성, 배치, 조합하는 개념",
+      "대상물의 형태를 표현하거나 형태와 관련된 시각적 암시를 포함하고 있는 개념"
+    ],
+    "answer": 2,
+    "user": 2
+  },
+  {
+    "type": "multiple",
+    "question": "다음 중 “배나무 붉은별무늬병(적성병)” 의 중간기주는?",
+    "choices": [
+      "소나무 재선충",
+      "향나무 녹병",
+      "대추나무 빗자루병",
+      "철쭉 떡병"
+    ],
+    "answer": 1,
+    "user": 3
+  },
+  {
+    "type": "ox",
+    "question": "다음 수목의 병을 일으키는 생리적 병원에 관한 설명 중, 맞으면 O, 틀리면 X 하시오.    대기 오염도가 높아 급성 증상이 나타나면 나무가 고사한다",
+    "answer": "O",
+    "user": "X"
+  }
