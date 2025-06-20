@@ -106,6 +106,30 @@ function renderQuestion() {
     container.appendChild(left); container.appendChild(right);
     quizEl.appendChild(container);
   }
+    else if (q.type === 'sequence') {
+  // 보기 나열
+  const box = document.createElement('div');
+  box.className = 'seq-choices';
+  q.choices.forEach((ch, i) => {
+    const span = document.createElement('span');
+    span.textContent = ch;
+    span.className = 'seq-choice';
+    box.appendChild(span);
+    if (i < q.choices.length-1) {
+      const arrow = document.createElement('span');
+      arrow.textContent = ' → ';
+      box.appendChild(arrow);
+    }
+  });
+  quizEl.appendChild(box);
+
+  // 빈칸 입력
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = '예: 1→2→3';
+  input.className = 'seq-input';
+  quizEl.appendChild(input);
+}
 // renderQuestion() 안에 기존 유형 바로 다음에 추가
 else if (q.type === "image-blank") {
   // 컨테이너 세팅
