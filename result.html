@@ -94,54 +94,109 @@
   </div>
 
   <script>
-    // 틀린 문제 목록 (q에 user 속성 포함)
-    const wrong = JSON.parse(localStorage.getItem('quizWrong') || '[]');
-    const perPage = 3;
-    let page = 0;
+    document.addEventListener('DOMContentLoaded', () => {
+      const wrong = JSON.parse(localStorage.getItem('quizWrong') || '[]');
+      const perPage = 3;
+      let page = 0;
 
-    const wrongList = document.getElementById('wrongList');
-    const prevPage = document.getElementById('prevPage');
-    const nextPage = document.getElementById('nextPage');
-    const pageInfo = document.getElementById('pageInfo');
+      const wrongList = document.getElementById('wrongList');
+      const prevPage = document.getElementById('prevPage');
+      const nextPage = document.getElementById('nextPage');
+      const pageInfo = document.getElementById('pageInfo');
 
-    function renderPage() {
-      wrongList.innerHTML = '';
-      if (wrong.length === 0) {
-        wrongList.innerHTML = '<p>틀린 문제가 없습니다!</p>';
-        document.getElementById('pagination').style.display = 'none';
-        return;
+      function renderPage() {
+        wrongList.innerHTML = '';
+        if (wrong.length === 0) {
+          wrongList.innerHTML = '<p>틀린 문제가 없습니다!</p>';
+          document.getElementById('pagination').style.display = 'none';
+          return;
+        }
+        document.getElementById('pagination').style.display = 'block';
+        const start = page * perPage;
+        const end = Math.min(start + perPage, wrong.length);
+
+        for (let i = start; i < end; i++) {
+          const q = wrong[i];
+          const item = document.createElement('div');
+          item.className = 'wrong-item';
+
+          // 문제 텍스트
+          const h3 = document.createElement('h3');
+          h3.textContent = `${i + 1}. ${q.question}`;
+          item.appendChild(h3);
+
+          // 선택지/입력 영역
+          if (q.type === 'multiple') {
+            q.choices.forEach((ch, idx) => {
+              const btn = document.createElement('div');
+              btn.className = 'choice-button';
+              btn.textContent = `${idx + 1}. ${ch}`;
+              if (idx === q.user) btn.classList.add('wrong');
+              if (idx === q.answer - 1) btn.classList.add('correct');
+              item.appendChild(btn);
+            });
+          } else if (q.type === 'short') {
+            const div = document.createElement('div');
+            div.className = 'choice-display';
+            div.textContent = `내 답: ${q.user}   정답: ${q.answer.join(', ')}`;
+            item.appendChild(div);
+          } else if (q.type === 'ox') {
+            ['O', 'X'].forEach(label => {
+              const btn = document.createElement('div');
+              btn.className = 'choice-button';
+              btn.textContent = label;
+              if (label === q.user) btn.classList.add(label === q.answer ? 'correct' : 'wrong');
+              if (label === q.answer) btn.classList.add('correct');
+              item.appendChild(btn);
+            });
+          } else if (q.type === 'group') {
+            const container = document.createElement('div');
+            container.className = 'group-ui';
+            const left = document.createElement('div');
+            left.className = 'group-left';
+            q.pairs.forEach(p => {
+              const pEl = document.createElement('p');
+              pEl.textContent = p;
+              left.appendChild(pEl);
+            });
+            const right = document.createElement('div');
+            right.className = 'group-right';
+            q.pairs.forEach((key, idx) => {
+              const row = document.createElement('div');
+              const inp = document.createElement('input');
+              inp.className = 'group-input'; inp.disabled = true;
+              inp.value = q.user[key] || '';
+              const span = document.createElement('span');
+              span.textContent = q.choices[idx];
+              row.appendChild(inp);
+              row.appendChild(span);
+              right.appendChild(row);
+            });
+            container.appendChild(left);
+            container.appendChild(right);
+            item.appendChild(container);
+
+            const ansDiv = document.createElement('div');
+            ansDiv.innerHTML = '<strong>정답 매핑:</strong> ' +
+              Object.entries(q.answer)
+                .map(([k,v]) => `${k}: ${q.choices[v-1]}`)
+                .join(', ');
+            item.appendChild(ansDiv);
+          }
+
+          wrongList.appendChild(item);
+        }
+
+        pageInfo.textContent = `${page + 1} / ${Math.ceil(wrong.length / perPage)}`;
+        prevPage.disabled = (page === 0);
+        nextPage.disabled = (end >= wrong.length);
       }
-      const start = page * perPage;
-      const end = Math.min(start + perPage, wrong.length);
 
-      for (let i = start; i < end; i++) {
-        const q = wrong[i];
-        const item = document.createElement('div');
-        item.className = 'wrong-item';
+      prevPage.onclick = () => { if (page > 0) { page--; renderPage(); } };
+      nextPage.onclick = () => { if ((page + 1) * perPage < wrong.length) { page++; renderPage(); } };
 
-        // 문제 텍스트
-        const h3 = document.createElement('h3');
-        h3.textContent = `${i+1}. ${q.question}`;
-        item.appendChild(h3);
-
-        // 보기/입력 영역 (readonly)
-        if (q.type === 'multiple') {
-          q.choices.forEach((ch, idx) => {
-            const btn = document.createElement('div');
-            btn.className = 'choice-button';
-            btn.textContent = `${idx+1}. ${ch}`;
-            if (idx === q.user) btn.classList.add(btn.textContent.startsWith(`${q.answer}.`) ? 'correct' : 'wrong');
-            if (idx === q.answer - 1) btn.classList.add('correct');
-            item.appendChild(btn);
-          });
-        } else if (q.type === 'short') {
-          const div = document.createElement('div');
-          div.className = 'choice-display';
-          div.textContent = `내 답: ${q.user}  |  정답: ${q.answer.join(', ')}`;
-          item.appendChild(div);
-        } else if (q.type === 'ox') {
-          ['O','X'].forEach(label => {
-            const btn = document.createElement('div');
-            btn.className = 'choice-button';
-            btn.textContent = label;
-            if (label === q.user) btn.classList.add(label
+      renderPage();
+    });
+  </script>
+</body>
+</html>
