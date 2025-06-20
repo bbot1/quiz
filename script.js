@@ -223,10 +223,21 @@ function restoreAnswer() {
 }
 
 function finishQuiz() {
-  localStorage.setItem('quizScore',score);
-  localStorage.setItem('quizTotal',quizData.length);
-  localStorage.setItem('quizWrong',JSON.stringify(wrongAnswers));
-  location.href='result.html';
+  // 각 문항별 결과 배열 생성
+  const quizResults = quizData.map((q, idx) => ({
+    index: idx + 1,         // 1-based 문제 번호
+    type: q.type,
+    question: q.question,
+    choices: q.choices,      // multiple, sequence 등만 있으면 OK
+    answer: q.answer,
+    user: userAnswers[idx]   // 사용자가 선택/입력한 답
+  }));
+
+  localStorage.setItem("quizResults", JSON.stringify(quizResults));
+  localStorage.setItem("quizScore", score);
+  localStorage.setItem("quizTotal", quizData.length);
+  location.href = "result.html";
 }
+
 
 window.onload=renderQuestion;
