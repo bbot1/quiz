@@ -7,11 +7,20 @@
 </head>
 <body>
   <div id="quiz-container">
-    <div id="userName"></div>
-    <div id="progress"></div>
-    <div id="quiz"></div>
-    <button id="nextButton">다음</button>
-    <button id="giveUpBtn">포기</button>
+    <div id="sidebar">
+      <h4>풀이 내역</h4>
+      <ul id="answerList"></ul>
+    </div>
+    <div id="quiz-area">
+      <div id="userName"></div>
+      <div id="progress"></div>
+      <div id="quiz"></div>
+      <div id="controls">
+        <button id="prevButton">이전</button>
+        <button id="nextButton">다음</button>
+        <button id="giveUpBtn">포기</button>
+      </div>
+    </div>
   </div>
   <script src="quizData.js"></script>
   <script src="script.js"></script>
