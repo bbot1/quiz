@@ -2,28 +2,100 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>결과</title>
+  <title>퀴즈 결과</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    #result-container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .wrong-item { margin-bottom: 20px; }
+    .wrong-item p { margin: 4px 0; }
+    #pagination { text-align: center; margin: 20px 0; }
+    #pagination button { margin: 0 10px; padding: 6px 12px; }
+  </style>
 </head>
 <body>
   <div id="result-container">
     <h1>퀴즈 결과</h1>
-    <div id="singleWrong"></div>
-    <button id="nextWrong">다음 틀린문제</button>
-    <button onclick="location.href='index.html'">처음으로</button>
+    <div id="wrongList"></div>
+    <div id="pagination">
+      <button id="prevPage">이전</button>
+      <span id="pageInfo"></span>
+      <button id="nextPage">다음</button>
+    </div>
+    <div style="text-align:right;">
+      <button onclick="location.href='index.html'">처음으로</button>
+    </div>
   </div>
+
   <script>
-    const wrong = JSON.parse(localStorage.getItem('quizWrong')||'[]');
-    let idx=0;
-    const single = document.getElementById('singleWrong');
-    const nextW = document.getElementById('nextWrong');
-    function showWrong() {
-      if(idx>=wrong.length) { single.innerHTML='<p>틀린 문제가 없습니다!</p>'; nextW.style.display='none'; return; }
-      const q=wrong[idx];
-      single.innerHTML=`<p>${idx+1}. ${q.question}</p><p>정답: ${q.type==='multiple'? q.choices[q.answer]: q.answer}</p>`;
+    const wrong = JSON.parse(localStorage.getItem('quizWrong') || '[]');
+    const perPage = 3;
+    let page = 0;
+
+    const wrongList = document.getElementById('wrongList');
+    const prevPage = document.getElementById('prevPage');
+    const nextPage = document.getElementById('nextPage');
+    const pageInfo = document.getElementById('pageInfo');
+
+    function renderPage() {
+      wrongList.innerHTML = '';
+      const start = page * perPage;
+      const end = Math.min(start + perPage, wrong.length);
+
+      if (wrong.length === 0) {
+        wrongList.innerHTML = '<p>틀린 문제가 없습니다!</p>';
+        document.getElementById('pagination').style.display = 'none';
+        return;
+      }
+
+      for (let i = start; i < end; i++) {
+        const q = wrong[i];
+        const item = document.createElement('div');
+        item.className = 'wrong-item';
+
+        const pQ = document.createElement('p');
+        pQ.textContent = `${i+1}. ${q.question}`;
+        item.appendChild(pQ);
+
+        const pA = document.createElement('p');
+        let correctAnswer = '';
+        if (q.type === 'multiple') {
+          correctAnswer = q.choices[q.answer];
+        } else if (q.type === 'ox') {
+          correctAnswer = q.answer;
+        } else if (q.type === 'short') {
+          correctAnswer = q.answer.join(', ');
+        } else if (q.type === 'group') {
+          // 글자 k: v 매핑
+          correctAnswer = Object.entries(q.answer)
+            .map(([k,v]) => `${k}: ${q.choices[v-1]}`)
+            .join(', ');
+        }
+        pA.innerHTML = `<strong>정답:</strong> ${correctAnswer}`;
+        item.appendChild(pA);
+
+        wrongList.appendChild(item);
+      }
+
+      pageInfo.textContent = `${page+1} / ${Math.ceil(wrong.length / perPage)}`;
+      prevPage.disabled = (page === 0);
+      nextPage.disabled = (end >= wrong.length);
     }
-    nextW.onclick = () => { idx++; showWrong(); };
-    window.onload = showWrong;
+
+    prevPage.onclick = () => {
+      if (page > 0) { page--; renderPage(); }
+    };
+    nextPage.onclick = () => {
+      if ((page + 1) * perPage < wrong.length) { page++; renderPage(); }
+    };
+
+    window.onload = renderPage;
   </script>
 </body>
 </html>
