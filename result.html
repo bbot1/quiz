@@ -87,37 +87,38 @@
 <body>
   <div id="result-container">
     <h1>퀴즈 결과</h1>
-    <!-- 요약 정보 -->
+
+    <!-- 1) 요약 정보 -->
     <div id="summary"></div>
 
-    <!-- 틀린 문제 목록 -->
+    <!-- 2) 틀린 문제 표시 영역 -->
     <div id="wrongList"></div>
 
-    <!-- 페이지 네이션 -->
+    <!-- 3) 페이지 네이션 -->
     <div id="pagination">
       <button id="prevPage">이전</button>
       <span id="pageInfo"></span>
       <button id="nextPage">다음</button>
     </div>
 
-    <div style="text-align:right;">
+    <div style="text-align:right; margin-top:20px;">
       <button onclick="location.href='index.html'">처음으로</button>
     </div>
   </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // 로컬스토리지에서 점수 및 문제 데이터 불러오기
+      // 로컬스토리지에서 데이터 불러오기
       const score = parseInt(localStorage.getItem('quizScore')) || 0;
       const total = parseInt(localStorage.getItem('quizTotal')) || 0;
       const wrong = JSON.parse(localStorage.getItem('quizWrong') || '[]');
       const wrongCount = wrong.length;
 
-      // 요약 표시
+      // 1) 요약 표시
       document.getElementById('summary').innerHTML =
-        `맞춘 문제: <strong>${score}</strong> | 틀린 문제: <strong>${wrongCount}</strong> | 전체 문제: <strong>${total}</strong>`;
+        `맞춘 문제: <strong>${score}</strong>  |  틀린 문제: <strong>${wrongCount}</strong>  |  전체 문제: <strong>${total}</strong>`;
 
-      // 페이징 변수
+      // 2) 틀린 문제를 한 번에 3개씩 보여주는 페이징 설정
       const perPage = 3;
       let page = 0;
 
@@ -136,34 +137,4 @@
         document.getElementById('pagination').style.display = 'block';
 
         const start = page * perPage;
-        const end = Math.min(start + perPage, wrong.length);
-
-        for (let i = start; i < end; i++) {
-          const q = wrong[i];
-          const item = document.createElement('div');
-          item.className = 'wrong-item';
-
-          // 문제 텍스트
-          const h3 = document.createElement('h3');
-          h3.textContent = `${i + 1}. ${q.question}`;
-          item.appendChild(h3);
-
-          // 객관식/단답형/OX/연결형 UI (이전 코드 재사용)
-          // ... 생략 (기존 구현 그대로) ...
-
-          wrongList.appendChild(item);
-        }
-
-        pageInfo.textContent = `${page + 1} / ${Math.ceil(wrong.length / perPage)}`;
-        prevPage.disabled = (page === 0);
-        nextPage.disabled = (end >= wrong.length);
-      }
-
-      prevPage.onclick = () => { if (page > 0) { page--; renderPage(); } };
-      nextPage.onclick = () => { if ((page + 1) * perPage < wrong.length) { page++; renderPage(); } };
-
-      renderPage();
-    });
-  </script>
-</body>
-</html>
+        const end = Math.min(start + perPage,
