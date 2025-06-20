@@ -8,22 +8,22 @@
 <body>
   <div id="result-container">
     <h1>퀴즈 결과</h1>
-    <div id="result"></div>
+    <div id="singleWrong"></div>
+    <button id="nextWrong">다음 틀린문제</button>
     <button onclick="location.href='index.html'">처음으로</button>
   </div>
   <script>
-    window.onload = () => {
-      const score = localStorage.getItem('quizScore');
-      const total = localStorage.getItem('quizTotal');
-      const wrong = JSON.parse(localStorage.getItem('quizWrong') || '[]');
-      let html = `<p>점수: ${score} / ${total}</p>`;
-      if (wrong.length > 0) {
-        html += `<h3>틀린 문제</h3><ol>`;
-        wrong.forEach(q => html += `<li>${q.question}</li>`);
-        html += `</ol>`;
-      }
-      document.getElementById('result').innerHTML = html;
-    };
+    const wrong = JSON.parse(localStorage.getItem('quizWrong')||'[]');
+    let idx=0;
+    const single = document.getElementById('singleWrong');
+    const nextW = document.getElementById('nextWrong');
+    function showWrong() {
+      if(idx>=wrong.length) { single.innerHTML='<p>틀린 문제가 없습니다!</p>'; nextW.style.display='none'; return; }
+      const q=wrong[idx];
+      single.innerHTML=`<p>${idx+1}. ${q.question}</p><p>정답: ${q.type==='multiple'? q.choices[q.answer]: q.answer}</p>`;
+    }
+    nextW.onclick = () => { idx++; showWrong(); };
+    window.onload = showWrong;
   </script>
 </body>
 </html>
