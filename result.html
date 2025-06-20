@@ -19,9 +19,7 @@
       let html = `<p>점수: ${score} / ${total}</p>`;
       if (wrong.length > 0) {
         html += `<h3>틀린 문제</h3><ol>`;
-        wrong.forEach(q => {
-          html += `<li>${q.question}</li>`;
-        });
+        wrong.forEach(q => html += `<li>${q.question}</li>`);
         html += `</ol>`;
       }
       document.getElementById('result').innerHTML = html;
