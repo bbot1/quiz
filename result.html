@@ -18,31 +18,79 @@
       margin: 10px 0 20px;
       text-align: center;
     }
-    .question-item {
-      margin-bottom: 24px;
+    #resultList {
+      margin-bottom: 20px;
     }
-    .question-item h3 {
+    .wrong-item {
+      margin-bottom: 20px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 16px;
+    }
+    .wrong-item h3 {
       margin: 0 0 8px;
       font-size: 18px;
     }
-    .choice-button, .choice-display {
+    .choice-button {
+      margin: 4px 0;
+      padding: 8px;
+      width: 100%;
+      text-align: left;
+      border: 1px solid #ccc;
+      background: #fff;
+      border-radius: 4px;
       cursor: default;
     }
-    .choice-display {
-      margin: 4px 0;
-      padding: 6px;
+    .choice-button.correct {
+      border-color: #28a745;
+      background: #e6ffed;
+    }
+    .choice-button.wrong {
+      border-color: #dc3545;
+      background: #ffe6e6;
+    }
+    .group-ui {
+      display: flex;
+      gap: 20px;
+      margin: 8px 0;
+    }
+    .group-left p {
+      margin: 6px 0;
+      font-weight: bold;
+    }
+    .group-right div {
+      display: flex;
+      align-items: center;
+      margin: 6px 0;
+    }
+    .group-input {
+      width: 30px;
+      padding: 4px;
+      margin-right: 8px;
+      text-align: center;
+      border: 1px solid #ccc;
       background: #f9f9f9;
       border-radius: 4px;
+    }
+    #pagination {
+      text-align: center;
+      margin: 20px 0;
+    }
+    #pagination button {
+      margin: 0 8px;
+      padding: 6px 12px;
     }
   </style>
 </head>
 <body>
   <div id="result-container">
     <h1>퀴즈 결과</h1>
-    <!-- 간단 요약 -->
     <div id="summary"></div>
-    <!-- 푼 문제 전체 표시 -->
-    <div id="attemptList"></div>
+    <div id="resultList"></div>
+    <div id="pagination">
+      <button id="prevPage">이전</button>
+      <span id="pageInfo"></span>
+      <button id="nextPage">다음</button>
+    </div>
     <div style="text-align:right; margin-top:20px;">
       <button onclick="location.href='index.html'">처음으로</button>
     </div>
@@ -57,34 +105,104 @@
         if (r.type === 'multiple' || r.type === 'sequence') return Number(r.user) === Number(r.answer);
         if (r.type === 'short') return r.answer.includes(r.user);
         if (r.type === 'ox') return r.user === r.answer;
-        // group or image-blank
         return JSON.stringify(r.user) === JSON.stringify(r.answer);
       }).length;
       const wrongCount = total - correctCount;
-
       // summary
       document.getElementById('summary').innerHTML =
         `총 푼 문제: <strong>${total}</strong>  |  맞춘: <strong>${correctCount}</strong>  |  틀린: <strong>${wrongCount}</strong>`;
 
-      const listEl = document.getElementById('attemptList');
-      attempted.forEach(r => {
-        const item = document.createElement('div');
-        item.className = 'question-item';
-        // 문제 번호, 텍스트
-        const qTitle = document.createElement('h3');
-        qTitle.textContent = `${r.index}. ${r.question}`;
-        item.appendChild(qTitle);
-        // 답안 표시
-        const userDiv = document.createElement('div');
-        userDiv.className = 'choice-display';
-        userDiv.innerHTML = `<strong>내 답:</strong> ${JSON.stringify(r.user)}`;
-        item.appendChild(userDiv);
-        const ansDiv = document.createElement('div');
-        ansDiv.className = 'choice-display';
-        ansDiv.innerHTML = `<strong>정답:</strong> ${JSON.stringify(r.answer)}`;
-        item.appendChild(ansDiv);
-        listEl.appendChild(item);
-      });
+      const perPage = 3;
+      let page = 0;
+      const listEl = document.getElementById('resultList');
+      const prevPage = document.getElementById('prevPage');
+      const nextPage = document.getElementById('nextPage');
+      const pageInfo = document.getElementById('pageInfo');
+
+      function renderPage() {
+        listEl.innerHTML = '';
+        if (attempted.length === 0) {
+          listEl.innerHTML = '<p>풀었던 문제가 없습니다!</p>';
+          document.getElementById('pagination').style.display = 'none';
+          return;
+        }
+        document.getElementById('pagination').style.display = 'block';
+
+        const start = page * perPage;
+        const end = Math.min(start + perPage, attempted.length);
+
+        for (let i = start; i < end; i++) {
+          const q = attempted[i];
+          const item = document.createElement('div');
+          item.className = 'wrong-item';
+          // 제목
+          const h3 = document.createElement('h3');
+          h3.textContent = `${q.index}. ${q.question}`;
+          item.appendChild(h3);
+          // multiple
+          if (q.type === 'multiple') {
+            const correctIdx = Number(q.answer);
+            const userIdx = Number(q.user);
+            q.choices.forEach((ch, idx) => {
+              const btn = document.createElement('div');
+              btn.className = 'choice-button';
+              btn.textContent = `${idx+1}. ${ch}`;
+              if (idx === correctIdx) btn.classList.add('correct');
+              if (idx === userIdx && userIdx !== correctIdx) btn.classList.add('wrong');
+              item.appendChild(btn);
+            });
+          }
+          // short
+          else if (q.type === 'short') {
+            const div = document.createElement('div');
+            div.className = 'choice-button';
+            div.textContent = `내 답: ${q.user}`;
+            item.appendChild(div);
+          }
+          // ox
+          else if (q.type === 'ox') {
+            ['O','X'].forEach(lbl => {
+              const btn = document.createElement('div');
+              btn.className = 'choice-button';
+              btn.textContent = lbl;
+              if (lbl === q.answer) btn.classList.add('correct');
+              if (lbl === q.user && lbl !== q.answer) btn.classList.add('wrong');
+              item.appendChild(btn);
+            });
+          }
+          // group
+          else if (q.type === 'group') {
+            const cont = document.createElement('div'); cont.className='group-ui';
+            const left = document.createElement('div'); left.className='group-left';
+            q.pairs.forEach(p => { const pEl = document.createElement('p'); pEl.textContent=p; left.appendChild(pEl);} );
+            const right = document.createElement('div'); right.className='group-right';
+            q.pairs.forEach((key, idx) => {
+              const row = document.createElement('div');
+              const inp = document.createElement('input'); inp.className='group-input'; inp.disabled=true; inp.value=q.user[key]||'';
+              const span = document.createElement('span'); span.textContent=q.choices[idx];
+              row.append(inp, span); right.appendChild(row);
+            }); cont.append(left, right); item.appendChild(cont);
+          }
+          // image-blank
+          else if (q.type === 'image-blank') {
+            const cont = document.createElement('div'); cont.style.position='relative'; cont.style.maxWidth='100%';
+            const img = document.createElement('img'); img.src=q.imageUrl; img.style.width='100%'; cont.appendChild(img);
+            q.blanks.forEach(b=>{ const inp=document.createElement('input'); inp.className='group-input'; inp.disabled=true; inp.value=q.user[b.key]||''; inp.style.position='absolute'; inp.style.left=`${b.x}%`; inp.style.top=`${b.y}%`; inp.style.width=`${b.width}%`; inp.style.transform='translate(-50%,-50%)'; cont.appendChild(inp); });
+            item.appendChild(cont);
+          }
+          // sequence
+          else if (q.type==='sequence') {
+            const seq = document.createElement('div'); seq.className='choice-button'; seq.textContent=q.choices.join(' → '); item.appendChild(seq);
+          }
+          listEl.appendChild(item);
+        }
+        pageInfo.textContent = `${page+1} / ${Math.ceil(attempted.length/perPage)}`;
+        prevPage.disabled = page===0;
+        nextPage.disabled = end>=attempted.length;
+      }
+      prevPage.onclick = ()=>{ if(page>0){ page--; renderPage(); }};
+      nextPage.onclick = ()=>{ if((page+1)*perPage<attempted.length){ page++; renderPage(); }};
+      renderPage();
     });
   </script>
 </body>
