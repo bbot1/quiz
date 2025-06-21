@@ -59,7 +59,7 @@ function renderQuestion() {
   updateProgress();
   updateGrid();
 
-  // Question text + inline-blank 처리
+  // inline-blank 유형
   if (q.type === 'inline-blank') {
     const p = document.createElement('p');
     const parts = q.question.split('○');
@@ -67,9 +67,7 @@ function renderQuestion() {
       p.appendChild(document.createTextNode(text));
       if (i < parts.length - 1) {
         const inp = document.createElement('input');
-        inp.type = 'text';
-        inp.size = 4;
-        inp.maxLength = 10;
+        inp.type = 'text'; inp.size = 4; inp.maxLength = 10;
         inp.className = 'inline-blank-input';
         inp.dataset.index = i;
         p.appendChild(inp);
@@ -99,15 +97,13 @@ function renderQuestion() {
 
   } else if (q.type === 'short') {
     const input = document.createElement('input');
-    input.type = 'text';
-    input.placeholder = '정답 입력';
+    input.type = 'text'; input.placeholder = '정답 입력';
     quizEl.appendChild(input);
 
   } else if (q.type === 'ox') {
     ['O','X'].forEach(label => {
       const btn = document.createElement('button');
-      btn.textContent = label;
-      btn.className = 'choice-button';
+      btn.textContent = label; btn.className = 'choice-button';
       btn.onclick = () => {
         quizEl.querySelectorAll('.choice-button').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
@@ -117,76 +113,40 @@ function renderQuestion() {
 
   } else if (q.type === 'group') {
     const left = document.createElement('div'); left.className = 'group-left';
-    q.pairs.forEach(p => {
-      const el = document.createElement('p');
-      el.textContent = p;
-      left.appendChild(el);
-    });
+    q.pairs.forEach(p => { const el = document.createElement('p'); el.textContent = p; left.appendChild(el); });
     const right = document.createElement('div'); right.className = 'group-right';
     q.choices.forEach((desc, i) => {
       const row = document.createElement('div');
-      const inp = document.createElement('input');
-      inp.type = 'text';
-      inp.maxLength = 1;
-      inp.dataset.key = q.pairs[i];
-      inp.className = 'group-input';
-      row.appendChild(inp);
-      row.appendChild(Object.assign(document.createElement('span'), { textContent: desc }));
+      const inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = 1;
+      inp.dataset.key = q.pairs[i]; inp.className = 'group-input';
+      row.appendChild(inp); row.appendChild(Object.assign(document.createElement('span'),{textContent: desc}));
       right.appendChild(row);
     });
     const container = document.createElement('div'); container.className = 'group-ui';
-    container.appendChild(left);
-    container.appendChild(right);
+    container.appendChild(left); container.appendChild(right);
     quizEl.appendChild(container);
 
   } else if (q.type === 'sequence') {
-    const box = document.createElement('div');
-    box.className = 'seq-choices';
+    const box = document.createElement('div'); box.className = 'seq-choices';
     q.choices.forEach((ch, i) => {
-      const span = document.createElement('span');
-      span.textContent = ch;
-      span.className = 'seq-choice';
+      const span = document.createElement('span'); span.textContent = ch; span.className = 'seq-choice';
       box.appendChild(span);
       if (i < q.choices.length - 1) {
-        const arrow = document.createElement('span');
-        arrow.textContent = ' → ';
-        box.appendChild(arrow);
+        const arrow = document.createElement('span'); arrow.textContent = ' → '; box.appendChild(arrow);
       }
     });
     quizEl.appendChild(box);
-
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.placeholder = '예: 1→2→3';
-    input.className = 'seq-input';
-    quizEl.appendChild(input);
+    const input = document.createElement('input'); input.type = 'text'; input.placeholder = '예: 1→2→3';
+    input.className = 'seq-input'; quizEl.appendChild(input);
 
   } else if (q.type === 'image-blank') {
-    const container = document.createElement('div');
-    container.style.position = 'relative';
-    container.style.maxWidth = '600px';
-    container.style.margin = '0 auto 20px';
+    const container = document.createElement('div'); container.style.position = 'relative'; container.style.maxWidth = '600px'; container.style.margin = '0 auto 20px';
     quizEl.appendChild(container);
-
-    const img = document.createElement('img');
-    img.src = q.imageUrl;
-    img.style.width = '100%';
-    container.appendChild(img);
-
+    const img = document.createElement('img'); img.src = q.imageUrl; img.style.width = '100%'; container.appendChild(img);
     q.blanks.forEach(b => {
-      const inp = document.createElement('input');
-      inp.type = 'text';
-      inp.placeholder = b.key;
-      inp.maxLength = 10;
-      inp.dataset.key = b.key;
-      inp.className = 'image-blank-input';
-
-      inp.style.position = 'absolute';
-      inp.style.left = b.x + '%';
-      inp.style.top = b.y + '%';
-      inp.style.width = b.width + '%';
-      inp.style.transform = 'translate(-50%, -50%)';
-
+      const inp = document.createElement('input'); inp.type = 'text'; inp.placeholder = b.key; inp.maxLength = 10;
+      inp.dataset.key = b.key; inp.className = 'image-blank-input';
+      inp.style.position = 'absolute'; inp.style.left = b.x + '%'; inp.style.top = b.y + '%'; inp.style.width = b.width + '%'; inp.style.transform = 'translate(-50%, -50%)';
       container.appendChild(inp);
     });
   }
@@ -207,120 +167,74 @@ function storeAnswer() {
       ans.push(v);
       const idx = Number(inp.dataset.index);
       const normUser = v.replace(/\s+/g, '').toLowerCase();
-      const normAns = q.answer[idx].replace(/\s+/g, '').toLowerCase();
-      if (normUser !== normAns) correct = false;
+      // q.answer[idx] may contain synonyms separated by '/'
+      const synonyms = q.answer[idx].split('/').map(s => s.trim().replace(/\s+/g, '').toLowerCase());
+      if (!synonyms.includes(normUser)) correct = false;
     });
-    if (ans.some(v => !v)) {
-      alert('모든 빈칸을 입력하세요.');
-      return false;
-    }
+    if (ans.some(v => !v)) { alert('모든 빈칸을 입력하세요.'); return false; }
 
   } else if (q.type === 'multiple') {
-    const btn = quizEl.querySelector('.choice-button.selected');
-    if (!btn) { alert('보기 중 하나를 선택하세요.'); return false; }
+    const btn = quizEl.querySelector('.choice-button.selected'); if (!btn) { alert('보기 중 하나를 선택하세요.'); return false; }
     const idx = [...quizEl.querySelectorAll('.choice-button')].indexOf(btn);
     ans = idx;
     correct = (idx + 1 === q.answer);
 
   } else if (q.type === 'short') {
     const inputEl = quizEl.querySelector('input');
-    const val = inputEl.value.trim();
-    if (!val) { alert('답을 입력하세요.'); return false; }
+    const val = inputEl.value.trim(); if (!val) { alert('답을 입력하세요.'); return false; }
     const normUser = val.replace(/\s+/g, '').toLowerCase();
     if (typeof q.answer === 'string') {
-      const normAns = q.answer.replace(/\s+/g, '').toLowerCase();
-      correct = (normAns === normUser);
+      const normAns = q.answer.replace(/\s+/g, '').toLowerCase(); correct = (normAns === normUser);
     } else {
-      correct = q.answer
-        .map(a => a.replace(/\s+/g, '').toLowerCase())
-        .includes(normUser);
+      correct = q.answer.map(a => a.replace(/\s+/g, '').toLowerCase()).includes(normUser);
     }
     ans = val;
 
   } else if (q.type === 'ox') {
-    const btn = quizEl.querySelector('.choice-button.selected');
-    if (!btn) { alert('O 또는 X 선택'); return false; }
-    ans = btn.textContent;
-    correct = (ans === q.answer);
+    const btn = quizEl.querySelector('.choice-button.selected'); if (!btn) { alert('O 또는 X 선택'); return false; }
+    ans = btn.textContent; correct = (ans === q.answer);
 
   } else if (q.type === 'group') {
-    const inputs = quizEl.querySelectorAll('.group-input');
-    if ([...inputs].some(i => !i.value.trim())) {
-      alert('빈칸 모두 채우기');
-      return false;
-    }
-    ans = {};
-    correct = true;
-    inputs.forEach(i => {
-      ans[i.dataset.key] = i.value.trim();
-      if (q.answer[i.dataset.key] !== i.value.trim()) correct = false;
-    });
+    const inputs = quizEl.querySelectorAll('.group-input'); if ([...inputs].some(i => !i.value.trim())) { alert('빈칸 모두 채우기'); return false; }
+    ans = {}; correct = true;
+    inputs.forEach(i => { ans[i.dataset.key] = i.value.trim(); if (q.answer[i.dataset.key] !== i.value.trim()) correct = false; });
 
   } else if (q.type === 'image-blank') {
-    const inputs = quizEl.querySelectorAll('.image-blank-input');
-    let allFilled = true;
-    correct = true;
-    ans = {};
-    inputs.forEach(inp => {
-      const k = inp.dataset.key;
-      const v = inp.value.trim();
-      if (!v) allFilled = false;
-      ans[k] = v;
-      if (v !== q.answer[k]) correct = false;
-    });
-    if (!allFilled) {
-      alert('모든 빈칸을 입력하세요.');
-      return false;
-    }
+    const inputs = quizEl.querySelectorAll('.image-blank-input'); let allFilled = true; correct = true; ans = {};
+    inputs.forEach(inp => { const k = inp.dataset.key; const v = inp.value.trim(); if (!v) allFilled = false; ans[k] = v; if (v !== q.answer[k]) correct = false; });
+    if (!allFilled) { alert('모든 빈칸을 입력하세요.'); return false; }
   }
 
   userAnswers[current] = ans;
-  if (!correct) wrongAnswers.push({ ...q, user: ans });
-  else score++;
-
+  if (!correct) wrongAnswers.push({ ...q, user: ans }); else score++;
   return true;
 }
 
 function restoreAnswer() {
   const q = quizData[current];
-  const prev = userAnswers[current];
-  if (prev == null) return;
+  const prev = userAnswers[current]; if (prev == null) return;
 
   if (q.type === 'inline-blank') {
-    quizEl.querySelectorAll('.inline-blank-input').forEach(inp => {
-      inp.value = prev[Number(inp.dataset.index)] || '';
-    });
+    quizEl.querySelectorAll('.inline-blank-input').forEach(inp => { inp.value = prev[Number(inp.dataset.index)] || ''; });
     return;
   }
 
   if (q.type === 'multiple') {
-    const btns = quizEl.querySelectorAll('.choice-button');
-    if (btns[prev]) btns[prev].classList.add('selected');
+    const btns = quizEl.querySelectorAll('.choice-button'); if (btns[prev]) btns[prev].classList.add('selected');
 
   } else if (q.type === 'short') {
     quizEl.querySelector('input').value = prev;
 
   } else if (q.type === 'ox') {
-    quizEl.querySelectorAll('.choice-button').forEach(b => {
-      if (b.textContent === prev) b.classList.add('selected');
-    });
+    quizEl.querySelectorAll('.choice-button').forEach(b => { if (b.textContent === prev) b.classList.add('selected'); });
 
   } else if (q.type === 'group') {
-    quizEl.querySelectorAll('.group-input').forEach(i => {
-      i.value = prev[i.dataset.key] || '';
-    });
+    quizEl.querySelectorAll('.group-input').forEach(i => { i.value = prev[i.dataset.key] || ''; });
   }
 }
 
 function finishQuiz() {
-  const quizResults = quizData.map((q, idx) => ({
-    index: idx + 1,
-    type: q.type,
-    question: q.question,
-    choices: q.choices,
-    answer: q.answer,
-    user: userAnswers[idx]
-  }));
+  const quizResults = quizData.map((q, idx) => ({ index: idx + 1, type: q.type, question: q.question, choices: q.choices, answer: q.answer, user: userAnswers[idx] }));
   localStorage.setItem("quizResults", JSON.stringify(quizResults));
   localStorage.setItem("quizScore", score);
   localStorage.setItem("quizTotal", quizData.length);
