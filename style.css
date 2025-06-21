@@ -152,6 +152,13 @@ body {
 .choice-button {
   white-space: pre-wrap;
 }
+.inline-blank-input {
+  border: 1px solid #888;
+  padding: 2px;
+  margin: 0 2px;
+  width: 3em;
+  text-align: center;
+}
 
 /* ::before로 키(A/B/C)를 표시 */
 .image-blank-input::before {
