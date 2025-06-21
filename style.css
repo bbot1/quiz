@@ -143,7 +143,15 @@ body {
   font-size: 14px;
   text-align: center;
 }
+/* 문제 본문 (h3) 에 줄바꿈 보존 */
+#quiz-area h3 {
+  white-space: pre-wrap;
+}
 
+/* 5지 보기 버튼에도 줄바꿈 보존 */
+.choice-button {
+  white-space: pre-wrap;
+}
 
 /* ::before로 키(A/B/C)를 표시 */
 .image-blank-input::before {
