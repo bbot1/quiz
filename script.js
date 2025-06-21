@@ -59,12 +59,32 @@ function renderQuestion() {
   updateProgress();
   updateGrid();
 
-  // Question text
+  // Question text + inline-blank 처리
+  if (q.type === 'inline-blank') {
+    const p = document.createElement('p');
+    const parts = q.question.split('○');
+    parts.forEach((text, i) => {
+      p.appendChild(document.createTextNode(text));
+      if (i < parts.length - 1) {
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.size = 4;
+        inp.maxLength = 10;
+        inp.className = 'inline-blank-input';
+        inp.dataset.index = i;
+        p.appendChild(inp);
+      }
+    });
+    quizEl.appendChild(p);
+    setTimeout(restoreAnswer, 0);
+    return;
+  }
+
+  // 그 외 기존 유형
   const qNum = document.createElement('h3');
   qNum.textContent = q.question;
   quizEl.appendChild(qNum);
 
-  // Render answer area
   if (q.type === 'multiple') {
     q.choices.forEach((choice, idx) => {
       const btn = document.createElement('button');
@@ -178,7 +198,24 @@ function storeAnswer() {
   const q = quizData[current];
   let ans, correct;
 
-  if (q.type === 'multiple') {
+  if (q.type === 'inline-blank') {
+    const inputs = quizEl.querySelectorAll('.inline-blank-input');
+    ans = [];
+    correct = true;
+    inputs.forEach(inp => {
+      const v = inp.value.trim();
+      ans.push(v);
+      const idx = Number(inp.dataset.index);
+      const normUser = v.replace(/\s+/g, '').toLowerCase();
+      const normAns = q.answer[idx].replace(/\s+/g, '').toLowerCase();
+      if (normUser !== normAns) correct = false;
+    });
+    if (ans.some(v => !v)) {
+      alert('모든 빈칸을 입력하세요.');
+      return false;
+    }
+
+  } else if (q.type === 'multiple') {
     const btn = quizEl.querySelector('.choice-button.selected');
     if (!btn) { alert('보기 중 하나를 선택하세요.'); return false; }
     const idx = [...quizEl.querySelectorAll('.choice-button')].indexOf(btn);
@@ -186,21 +223,18 @@ function storeAnswer() {
     correct = (idx + 1 === q.answer);
 
   } else if (q.type === 'short') {
-    // 공백 제거 + 소문자 변환해서 비교
     const inputEl = quizEl.querySelector('input');
     const val = inputEl.value.trim();
     if (!val) { alert('답을 입력하세요.'); return false; }
-
-    const normalizedUserVal = val.replace(/\s+/g, '').toLowerCase();
+    const normUser = val.replace(/\s+/g, '').toLowerCase();
     if (typeof q.answer === 'string') {
-      const normAnswer = q.answer.replace(/\s+/g, '').toLowerCase();
-      correct = (normAnswer === normalizedUserVal);
+      const normAns = q.answer.replace(/\s+/g, '').toLowerCase();
+      correct = (normAns === normUser);
     } else {
       correct = q.answer
         .map(a => a.replace(/\s+/g, '').toLowerCase())
-        .includes(normalizedUserVal);
+        .includes(normUser);
     }
-
     ans = val;
 
   } else if (q.type === 'ox') {
@@ -252,6 +286,13 @@ function restoreAnswer() {
   const prev = userAnswers[current];
   if (prev == null) return;
 
+  if (q.type === 'inline-blank') {
+    quizEl.querySelectorAll('.inline-blank-input').forEach(inp => {
+      inp.value = prev[Number(inp.dataset.index)] || '';
+    });
+    return;
+  }
+
   if (q.type === 'multiple') {
     const btns = quizEl.querySelectorAll('.choice-button');
     if (btns[prev]) btns[prev].classList.add('selected');
@@ -280,7 +321,6 @@ function finishQuiz() {
     answer: q.answer,
     user: userAnswers[idx]
   }));
-
   localStorage.setItem("quizResults", JSON.stringify(quizResults));
   localStorage.setItem("quizScore", score);
   localStorage.setItem("quizTotal", quizData.length);
