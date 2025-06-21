@@ -59,7 +59,7 @@ function renderQuestion() {
   updateProgress();
   updateGrid();
 
-  // inline-blank 유형
+  // inline-blank 유형 처리
   if (q.type === 'inline-blank') {
     const p = document.createElement('p');
     const parts = q.question.split('○');
@@ -156,20 +156,30 @@ function renderQuestion() {
 
 function storeAnswer() {
   const q = quizData[current];
-  let ans, correct;
+  let ans = [];
+  let correct = true;
 
   if (q.type === 'inline-blank') {
     const inputs = quizEl.querySelectorAll('.inline-blank-input');
-    ans = [];
-    correct = true;
-    inputs.forEach(inp => {
-      const v = inp.value.trim();
-      ans.push(v);
-      const idx = Number(inp.dataset.index);
-      const normUser = v.replace(/\s+/g, '').toLowerCase();
-      const synonyms = q.answer[idx].split('|').map(s => s.trim().replace(/\s+/g, '').toLowerCase());
-      if (!synonyms.includes(normUser)) correct = false;
-    });
+    const userVals = Array.from(inputs).map(inp => inp.value.trim());
+    const normUser = userVals.map(v => v.replace(/\s+/g, '').toLowerCase());
+    const normAns = q.answer.map(a => a.replace(/\s+/g, '').toLowerCase());
+
+    if (q.orderMatters === false) {
+      // 순서 무관: 개수와 포함 여부 검증
+      if (normUser.length !== normAns.length || !normAns.every(a => normUser.includes(a))) {
+        correct = false;
+      }
+    } else {
+      // 순서 엄격: 인덱스별 비교
+      for (let i = 0; i < normAns.length; i++) {
+        if (normUser[i] !== normAns[i]) {
+          correct = false;
+          break;
+        }
+      }
+    }
+    ans = userVals;
     if (ans.some(v => !v)) { alert('모든 빈칸을 입력하세요.'); return false; }
 
   } else if (q.type === 'multiple') {
@@ -183,7 +193,7 @@ function storeAnswer() {
     const val = inputEl.value.trim(); if (!val) { alert('답을 입력하세요.'); return false; }
     const normUser = val.replace(/\s+/g, '').toLowerCase();
     if (typeof q.answer === 'string') {
-      const normAns = q.answer.replace(/\s+/g, '').toLowerCase(); correct = (normAns === normUser);
+      correct = (q.answer.replace(/\s+/g, '').toLowerCase() === normUser);
     } else {
       correct = q.answer.map(a => a.replace(/\s+/g, '').toLowerCase()).includes(normUser);
     }
@@ -199,7 +209,7 @@ function storeAnswer() {
     inputs.forEach(i => { ans[i.dataset.key] = i.value.trim(); if (q.answer[i.dataset.key] !== i.value.trim()) correct = false; });
 
   } else if (q.type === 'image-blank') {
-    const inputs = quizEl.querySelectorAll('.image-blank-input'); let allFilled = true; correct = true; ans = {};
+    const inputs = quizEl.querySelectorAll('.image-blank-input'); let allFilled = true; ans = {};
     inputs.forEach(inp => { const k = inp.dataset.key; const v = inp.value.trim(); if (!v) allFilled = false; ans[k] = v; if (v !== q.answer[k]) correct = false; });
     if (!allFilled) { alert('모든 빈칸을 입력하세요.'); return false; }
   }
@@ -214,7 +224,7 @@ function restoreAnswer() {
   const prev = userAnswers[current]; if (prev == null) return;
 
   if (q.type === 'inline-blank') {
-    quizEl.querySelectorAll('.inline-blank-input').forEach(inp => { inp.value = prev[Number(inp.dataset.index)] || ''; });
+    quizEl.querySelectorAll('.inline-blank-input').forEach((inp, i) => { inp.value = prev[i] || ''; });
     return;
   }
 
