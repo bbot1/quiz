@@ -167,8 +167,7 @@ function storeAnswer() {
       ans.push(v);
       const idx = Number(inp.dataset.index);
       const normUser = v.replace(/\s+/g, '').toLowerCase();
-      // q.answer[idx] may contain synonyms separated by '/'
-      const synonyms = q.answer[idx].split('/').map(s => s.trim().replace(/\s+/g, '').toLowerCase());
+      const synonyms = q.answer[idx].split('|').map(s => s.trim().replace(/\s+/g, '').toLowerCase());
       if (!synonyms.includes(normUser)) correct = false;
     });
     if (ans.some(v => !v)) { alert('모든 빈칸을 입력하세요.'); return false; }
