@@ -1,330 +1,169 @@
-let current = 0;
-let score = 0;
-let wrongAnswers = [];
-let userAnswers = Array(quizData.length).fill(null);
-let userName = localStorage.getItem('quizUser') || '익명';
-
-const quizEl = document.getElementById("quiz");
-const nextBtn = document.getElementById("nextButton");
-const prevBtn = document.getElementById("prevButton");
-const giveUpBtn = document.getElementById("giveUpBtn");
-const progressEl = document.getElementById("progress");
-const userNameEl = document.getElementById("userName");
-const answerGrid = document.getElementById("answerGrid");
-
-function updateGrid() {
-  answerGrid.innerHTML = '';
-  quizData.forEach((_, idx) => {
-    const btn = document.createElement('button');
-    btn.textContent = idx + 1;
-    btn.className = 'number-button';
-    if (userAnswers[idx] != null) btn.classList.add('answered');
-    if (idx === current) btn.classList.add('current');
-    btn.onclick = () => { goToQuestion(idx); };
-    answerGrid.appendChild(btn);
-  });
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  margin: 0;
 }
 
-function goToQuestion(idx) {
-  current = idx;
-  renderQuestion();
+#quiz-container {
+  display: flex;
+  max-width: 800px;
+  margin: 20px auto;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-prevBtn.onclick = () => {
-  if (current > 0) { current--; renderQuestion(); }
-};
-nextBtn.onclick = () => {
-  if (!storeAnswer()) return;
-  if (current < quizData.length - 1) { current++; renderQuestion(); }
-  else finishQuiz();
-};
-giveUpBtn.onclick = finishQuiz;
-
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-}
-shuffle(quizData);
-
-function updateProgress() {
-  progressEl.textContent = `문제 ${current + 1} / ${quizData.length}`;
+#sidebar {
+  width: 160px;
+  flex-shrink: 0;
+  padding: 10px;
+  background: #fafafa;
+  border-right: 1px solid #ddd;
 }
 
-function renderQuestion() {
-  const q = quizData[current];
-  quizEl.innerHTML = '';
-  userNameEl.textContent = `사용자: ${userName}`;
-  updateProgress();
-  updateGrid();
-
-  // Question text + inline-blank 처리
-  if (q.type === 'inline-blank') {
-    const p = document.createElement('p');
-    const parts = q.question.split('○');
-    parts.forEach((text, i) => {
-      p.appendChild(document.createTextNode(text));
-      if (i < parts.length - 1) {
-        const inp = document.createElement('input');
-        inp.type = 'text';
-        inp.size = 4;
-        inp.maxLength = 10;
-        inp.className = 'inline-blank-input';
-        inp.dataset.index = i;
-        p.appendChild(inp);
-      }
-    });
-    quizEl.appendChild(p);
-    setTimeout(restoreAnswer, 0);
-    return;
-  }
-
-  // 그 외 기존 유형
-  const qNum = document.createElement('h3');
-  qNum.textContent = q.question;
-  quizEl.appendChild(qNum);
-
-  if (q.type === 'multiple') {
-    q.choices.forEach((choice, idx) => {
-      const btn = document.createElement('button');
-      btn.textContent = `${idx+1}. ${choice}`;
-      btn.className = 'choice-button';
-      btn.onclick = () => {
-        quizEl.querySelectorAll('.choice-button').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-      };
-      quizEl.appendChild(btn);
-    });
-
-  } else if (q.type === 'short') {
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.placeholder = '정답 입력';
-    quizEl.appendChild(input);
-
-  } else if (q.type === 'ox') {
-    ['O','X'].forEach(label => {
-      const btn = document.createElement('button');
-      btn.textContent = label;
-      btn.className = 'choice-button';
-      btn.onclick = () => {
-        quizEl.querySelectorAll('.choice-button').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-      };
-      quizEl.appendChild(btn);
-    });
-
-  } else if (q.type === 'group') {
-    const left = document.createElement('div'); left.className = 'group-left';
-    q.pairs.forEach(p => {
-      const el = document.createElement('p');
-      el.textContent = p;
-      left.appendChild(el);
-    });
-    const right = document.createElement('div'); right.className = 'group-right';
-    q.choices.forEach((desc, i) => {
-      const row = document.createElement('div');
-      const inp = document.createElement('input');
-      inp.type = 'text';
-      inp.maxLength = 1;
-      inp.dataset.key = q.pairs[i];
-      inp.className = 'group-input';
-      row.appendChild(inp);
-      row.appendChild(Object.assign(document.createElement('span'), { textContent: desc }));
-      right.appendChild(row);
-    });
-    const container = document.createElement('div'); container.className = 'group-ui';
-    container.appendChild(left);
-    container.appendChild(right);
-    quizEl.appendChild(container);
-
-  } else if (q.type === 'sequence') {
-    const box = document.createElement('div');
-    box.className = 'seq-choices';
-    q.choices.forEach((ch, i) => {
-      const span = document.createElement('span');
-      span.textContent = ch;
-      span.className = 'seq-choice';
-      box.appendChild(span);
-      if (i < q.choices.length - 1) {
-        const arrow = document.createElement('span');
-        arrow.textContent = ' → ';
-        box.appendChild(arrow);
-      }
-    });
-    quizEl.appendChild(box);
-
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.placeholder = '예: 1→2→3';
-    input.className = 'seq-input';
-    quizEl.appendChild(input);
-
-  } else if (q.type === 'image-blank') {
-    const container = document.createElement('div');
-    container.style.position = 'relative';
-    container.style.maxWidth = '600px';
-    container.style.margin = '0 auto 20px';
-    quizEl.appendChild(container);
-
-    const img = document.createElement('img');
-    img.src = q.imageUrl;
-    img.style.width = '100%';
-    container.appendChild(img);
-
-    q.blanks.forEach(b => {
-      const inp = document.createElement('input');
-      inp.type = 'text';
-      inp.placeholder = b.key;
-      inp.maxLength = 10;
-      inp.dataset.key = b.key;
-      inp.className = 'image-blank-input';
-
-      inp.style.position = 'absolute';
-      inp.style.left = b.x + '%';
-      inp.style.top = b.y + '%';
-      inp.style.width = b.width + '%';
-      inp.style.transform = 'translate(-50%, -50%)';
-
-      container.appendChild(inp);
-    });
-  }
-
-  setTimeout(restoreAnswer, 0);
+#sidebar h4 {
+  margin-top: 0;
+  font-size: 14px;
 }
 
-function storeAnswer() {
-  const q = quizData[current];
-  let ans, correct;
-
-  if (q.type === 'inline-blank') {
-    const inputs = quizEl.querySelectorAll('.inline-blank-input');
-    ans = [];
-    correct = true;
-    inputs.forEach(inp => {
-      const v = inp.value.trim();
-      ans.push(v);
-      const idx = Number(inp.dataset.index);
-      const normUser = v.replace(/\s+/g, '').toLowerCase();
-      const normAns = q.answer[idx].replace(/\s+/g, '').toLowerCase();
-      if (normUser !== normAns) correct = false;
-    });
-    if (ans.some(v => !v)) {
-      alert('모든 빈칸을 입력하세요.');
-      return false;
-    }
-
-  } else if (q.type === 'multiple') {
-    const btn = quizEl.querySelector('.choice-button.selected');
-    if (!btn) { alert('보기 중 하나를 선택하세요.'); return false; }
-    const idx = [...quizEl.querySelectorAll('.choice-button')].indexOf(btn);
-    ans = idx;
-    correct = (idx + 1 === q.answer);
-
-  } else if (q.type === 'short') {
-    const inputEl = quizEl.querySelector('input');
-    const val = inputEl.value.trim();
-    if (!val) { alert('답을 입력하세요.'); return false; }
-    const normUser = val.replace(/\s+/g, '').toLowerCase();
-    if (typeof q.answer === 'string') {
-      const normAns = q.answer.replace(/\s+/g, '').toLowerCase();
-      correct = (normAns === normUser);
-    } else {
-      correct = q.answer
-        .map(a => a.replace(/\s+/g, '').toLowerCase())
-        .includes(normUser);
-    }
-    ans = val;
-
-  } else if (q.type === 'ox') {
-    const btn = quizEl.querySelector('.choice-button.selected');
-    if (!btn) { alert('O 또는 X 선택'); return false; }
-    ans = btn.textContent;
-    correct = (ans === q.answer);
-
-  } else if (q.type === 'group') {
-    const inputs = quizEl.querySelectorAll('.group-input');
-    if ([...inputs].some(i => !i.value.trim())) {
-      alert('빈칸 모두 채우기');
-      return false;
-    }
-    ans = {};
-    correct = true;
-    inputs.forEach(i => {
-      ans[i.dataset.key] = i.value.trim();
-      if (q.answer[i.dataset.key] !== i.value.trim()) correct = false;
-    });
-
-  } else if (q.type === 'image-blank') {
-    const inputs = quizEl.querySelectorAll('.image-blank-input');
-    let allFilled = true;
-    correct = true;
-    ans = {};
-    inputs.forEach(inp => {
-      const k = inp.dataset.key;
-      const v = inp.value.trim();
-      if (!v) allFilled = false;
-      ans[k] = v;
-      if (v !== q.answer[k]) correct = false;
-    });
-    if (!allFilled) {
-      alert('모든 빈칸을 입력하세요.');
-      return false;
-    }
-  }
-
-  userAnswers[current] = ans;
-  if (!correct) wrongAnswers.push({ ...q, user: ans });
-  else score++;
-
-  return true;
+.number-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-top: 10px;
 }
 
-function restoreAnswer() {
-  const q = quizData[current];
-  const prev = userAnswers[current];
-  if (prev == null) return;
-
-  if (q.type === 'inline-blank') {
-    quizEl.querySelectorAll('.inline-blank-input').forEach(inp => {
-      inp.value = prev[Number(inp.dataset.index)] || '';
-    });
-    return;
-  }
-
-  if (q.type === 'multiple') {
-    const btns = quizEl.querySelectorAll('.choice-button');
-    if (btns[prev]) btns[prev].classList.add('selected');
-
-  } else if (q.type === 'short') {
-    quizEl.querySelector('input').value = prev;
-
-  } else if (q.type === 'ox') {
-    quizEl.querySelectorAll('.choice-button').forEach(b => {
-      if (b.textContent === prev) b.classList.add('selected');
-    });
-
-  } else if (q.type === 'group') {
-    quizEl.querySelectorAll('.group-input').forEach(i => {
-      i.value = prev[i.dataset.key] || '';
-    });
-  }
+.number-button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 12px;
+  background: white;
 }
 
-function finishQuiz() {
-  const quizResults = quizData.map((q, idx) => ({
-    index: idx + 1,
-    type: q.type,
-    question: q.question,
-    choices: q.choices,
-    answer: q.answer,
-    user: userAnswers[idx]
-  }));
-  localStorage.setItem("quizResults", JSON.stringify(quizResults));
-  localStorage.setItem("quizScore", score);
-  localStorage.setItem("quizTotal", quizData.length);
-  location.href = "result.html";
+.number-button.answered {
+  border-color: #28a745;
 }
 
-window.onload = renderQuestion;
+.number-button.current {
+  background: #007bff;
+  color: #fff;
+  border-color: #0056b3;
+}
+
+#quiz-area {
+  flex: 1;
+  max-width: 600px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+#quiz-area header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+#quiz {
+  flex: 1;
+  min-height: 180px;
+}
+
+#controls {
+  text-align: right;
+  margin-top: 10px;
+}
+
+#controls button {
+  margin-left: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.choice-button {
+  display: block;
+  margin: 6px 0;
+  padding: 10px;
+  width: 100%;
+  text-align: left;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.choice-button.selected {
+  background: #007bff;
+  color: #fff;
+}
+
+.group-ui {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.group-left, .group-right {
+  flex: 1;
+}
+.image-blank-input {
+  padding: 4px;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.9);
+  text-align: center;
+  font-size: 14px;
+}
+
+.group-input {
+  width: 24px;
+  padding: 2px;
+  margin-right: 4px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.group-right div {
+  display: flex;
+  align-items: center;
+  margin: 4px 0;
+}
+
+.image-blank-input {
+  position: absolute;
+  padding: 4px;
+  border: 2px dashed #007bff;       /* 점선 테두리로 강조 */
+  border-radius: 4px;
+  background: rgba(255,255,255,0.9);
+  font-size: 14px;
+  text-align: center;
+}
+/* 문제 본문 (h3) 에 줄바꿈 보존 */
+#quiz-area h3 {
+  white-space: pre-wrap;
+}
+
+/* 5지 보기 버튼에도 줄바꿈 보존 */
+.choice-button {
+  white-space: pre-wrap;
+}
+
+/* ::before로 키(A/B/C)를 표시 */
+.image-blank-input::before {
+  content: attr(data-key);
+  position: absolute;
+  top: -1.2em;   /* 입력칸 위 */
+  left: 50%;
+  transform: translateX(-50%);
+  background: #007bff;
+  color: white;
+  padding: 1px 4px;
+  font-size: 12px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
